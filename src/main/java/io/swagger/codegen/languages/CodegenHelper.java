@@ -1,10 +1,6 @@
 package io.swagger.codegen.languages;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CodegenHelper {
 
@@ -107,6 +103,110 @@ public class CodegenHelper {
         specialCharReplacements.put("<=", "Less_Than_Or_Equal_To");
         specialCharReplacements.put(">=", "Greater_Than_Or_Equal_To");
         specialCharReplacements.put("!=", "Not_Equal");
+    }
+
+    public static String getHTTPDescription(int httpStatusCode) {
+        if (httpStatusCode <= 0) {
+            return "";
+        }
+
+        HashMap<Integer,String> httpCodeAndDescription = new HashMap<Integer,String>();
+        httpCodeAndDescription.put(100, "CONTINUE");
+        httpCodeAndDescription.put(102, "PROCESSING");
+        httpCodeAndDescription.put(200, "OK");
+        httpCodeAndDescription.put(201, "CREATED");
+        httpCodeAndDescription.put(202, "ACCEPTED");
+        httpCodeAndDescription.put(203, "NON-AUTHORITATIVE INFORMATION");
+        httpCodeAndDescription.put(204, "NO CONTENT");
+        httpCodeAndDescription.put(205, "RESET CONTENT");
+        httpCodeAndDescription.put(206, "PARTIAL CONTENT");
+        httpCodeAndDescription.put(207, "MULTI-STATUS");
+        httpCodeAndDescription.put(208, "ALREADY REPORTED");
+        httpCodeAndDescription.put(226, "IM USED");
+        httpCodeAndDescription.put(300, "MULTIPLE CHOICES");
+        httpCodeAndDescription.put(301, "MOVED PERMANENTLY");
+        httpCodeAndDescription.put(302, "FOUND");
+        httpCodeAndDescription.put(303, "SEE OTHER");
+        httpCodeAndDescription.put(304, "NOT MODIFIED");
+        httpCodeAndDescription.put(305, "USE PROXY");
+        httpCodeAndDescription.put(307, "TEMPORARY REDIRECT");
+        httpCodeAndDescription.put(308, "PERMANENT REDIRECT");
+        httpCodeAndDescription.put(400, "BAD REQUEST");
+        httpCodeAndDescription.put(401, "UNAUTHORIZED");
+        httpCodeAndDescription.put(402, "PAYMENT REQUIRED");
+        httpCodeAndDescription.put(403, "FORBIDDEN");
+        httpCodeAndDescription.put(404, "NOT FOUND");
+        httpCodeAndDescription.put(405, "METHOD NOT ALLOWED");
+        httpCodeAndDescription.put(406, "NOT ACCEPTABLE");
+        httpCodeAndDescription.put(407, "PROXY AUTHENTICATION REQUIRED");
+        httpCodeAndDescription.put(408, "REQUEST TIMEOUT");
+        httpCodeAndDescription.put(409, "CONFLICT");
+        httpCodeAndDescription.put(410, "GONE");
+        httpCodeAndDescription.put(411, "LENGTH REQUIRED");
+        httpCodeAndDescription.put(412, "PRECONDITION FAILED");
+        httpCodeAndDescription.put(413, "REQUEST ENTITY TOO LARGE");
+        httpCodeAndDescription.put(414, "REQUEST-URI TOO LONG");
+        httpCodeAndDescription.put(415, "UNSUPPORTED MEDIA TYPE");
+        httpCodeAndDescription.put(416, "REQUESTED RANGE NOT SATISFIABLE");
+        httpCodeAndDescription.put(417, "EXPECTATION FAILED");
+        httpCodeAndDescription.put(421, "MISDIRECTED REQUEST");
+        httpCodeAndDescription.put(422, "UNPROCESSABLE ENTITY");
+        httpCodeAndDescription.put(423, "LOCKED");
+        httpCodeAndDescription.put(424, "FAILED DEPENDENCY");
+        httpCodeAndDescription.put(426, "UPGRADE REQUIRED");
+        httpCodeAndDescription.put(428, "PRECONDITION REQUIRED");
+        httpCodeAndDescription.put(429, "TOO MANY REQUESTS");
+        httpCodeAndDescription.put(431, "REQUEST HEADER FIELDS TOO LARGE");
+        httpCodeAndDescription.put(500, "INTERNAL SERVER ERROR");
+        httpCodeAndDescription.put(501, "NOT IMPLEMENTED");
+        httpCodeAndDescription.put(502, "BAD GATEWAY");
+        httpCodeAndDescription.put(503, "SERVICE UNAVAILABLE");
+        httpCodeAndDescription.put(504, "GATEWAY TIMEOUT");
+        httpCodeAndDescription.put(505, "HTTP VERSION NOT SUPPORTED");
+        httpCodeAndDescription.put(506, "VARIANT ALSO NEGOTIATES");
+        httpCodeAndDescription.put(507, "INSUFFICIENT STORAGE");
+        httpCodeAndDescription.put(508, "LOOP DETECTED");
+        httpCodeAndDescription.put(510, "NOT EXTENDED");
+        httpCodeAndDescription.put(511, "NETWORK AUTHENTICATION REQUIRED");
+
+        return httpCodeAndDescription.get(httpStatusCode);
+    }
+
+    public static String getFakerMethod(String fakerVariable, String type, String format) {
+        if (fakerVariable.isEmpty() || fakerVariable == null || type.isEmpty() || type == null) {
+            return "";
+        }
+
+        if (format == null) {
+            format = "";
+        }
+
+        HashMap<List<String>,String> keysToReplace = new HashMap<List<String>,String>();
+        keysToReplace.put(Arrays.asList("string", ""), fakerVariable + "text()");
+        keysToReplace.put(Arrays.asList("string", "date"), fakerVariable + "date()");
+        keysToReplace.put(Arrays.asList("string", "date-time"), fakerVariable + "dateTime()");
+        keysToReplace.put(Arrays.asList("string", "password"), fakerVariable + "password()");
+        keysToReplace.put(Arrays.asList("string", "uuid"), fakerVariable + "uuid");
+        keysToReplace.put(Arrays.asList("string", "uri"), fakerVariable + "url");
+        keysToReplace.put(Arrays.asList("string", "email"), fakerVariable + "email");
+        keysToReplace.put(Arrays.asList("string", "ipv4"), fakerVariable + "ipv4");
+        keysToReplace.put(Arrays.asList("string", "ipv6"), fakerVariable + "ipv6");
+        keysToReplace.put(Arrays.asList("integer", ""), fakerVariable + "numberBetween()");
+        keysToReplace.put(Arrays.asList("integer", "int32"), fakerVariable + "numberBetween()");
+        keysToReplace.put(Arrays.asList("integer", "int64"), fakerVariable + "numberBetween()");
+        keysToReplace.put(Arrays.asList("number", ""), fakerVariable + "numberBetween()");
+        keysToReplace.put(Arrays.asList("number", "float"), fakerVariable + "randomFloat()");
+        keysToReplace.put(Arrays.asList("number", "double"), fakerVariable + "randomFloat()");
+        keysToReplace.put(Arrays.asList("boolean", ""), fakerVariable + "boolean()");
+
+        if (
+                keysToReplace.get(Arrays.asList(type, format)) == null
+                        || keysToReplace.get(Arrays.asList(type, format)).isEmpty()
+                ) {
+            return "null";
+        }
+
+        return keysToReplace.get(Arrays.asList(type, format));
     }
 }
 

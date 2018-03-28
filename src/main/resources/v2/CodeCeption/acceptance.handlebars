@@ -1,0 +1,46 @@
+<?php
+declare(strict_types=1);
+
+use Codeception\Util\HttpCode;
+
+{{>licenseInfo}}
+
+{{#operations}}/**
+ * Class {{classname}}
+ *
+ * Acceptance tests for the {{classVarName}} endpoint.
+ *
+ */
+class {{classname}} extends TestCase
+{
+    {{#operation}}
+    /**
+     * Operation {{{operationId}}}
+     *
+     * {{{summary}}}
+     *
+     * @param AcceptanceTester $I
+     * @throws \Exception
+     */
+    public function {{operationId}}(AcceptanceTester $I)
+    {
+        {{#if postMethod}}{{#ifNotEquals httpMethod 'POST'}}// Make sure that at least one {{classVarName}} is present. 
+        $this->{{postMethod}}($I);
+
+        {{/ifNotEquals}}{{/if ~}} 
+
+        {{#if pathParams}}{{#pathParams}}${{paramName}} = ''; //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
+        {{/pathParams}}{{/if ~}}
+
+        $I->send{{httpMethod}}("{{resolvedPath}}"{{#ifEquals httpMethod 'POST'}}, ['']{{/ifEquals}});
+        $I->seeResponseCodeIs(HttpCode::{{#responses}}{{#dataType}}{{httpDescription}}{{/dataType}}{{/responses}});
+        {{#produces}}{{#ifEquals mediaType 'application/json'}}$I->seeResponseIsJson();{{else}}$I->seeResponseIsXml();{{/ifEquals}}{{/produces}}{{^produces}}{{/produces}}
+        $I->seeResponseMatchesJsonType(
+            [
+                {{{codeCeptionResponse}}}
+            ]
+        );
+    }
+    {{/operation}}
+}
+{{/operations ~}}
