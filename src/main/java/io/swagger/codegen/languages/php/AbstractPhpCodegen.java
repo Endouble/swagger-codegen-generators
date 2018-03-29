@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.swagger.codegen.languages.helpers.ExtensionHelper.getBooleanValue;
+import static io.swagger.codegen.handlebars.helpers.ExtensionHelper.getBooleanValue;
 
 public abstract class AbstractPhpCodegen extends DefaultCodegenConfig implements CodegenConfig {
     static Logger LOGGER = LoggerFactory.getLogger(AbstractPhpCodegen.class);

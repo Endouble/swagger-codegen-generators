@@ -2,6 +2,8 @@ package io.swagger.codegen.languages.php;
 
 import io.swagger.codegen.*;
 import io.swagger.codegen.languages.CodegenHelper;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 
 import java.io.File;
 import java.util.*;
@@ -94,7 +96,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
             StringBuilder responseJson = new StringBuilder("");
             for (CodegenResponse response : responses) {
-                io.swagger.v3.oas.models.media.ObjectSchema test = (io.swagger.v3.oas.models.media.ObjectSchema) response.getSchema();
+                ObjectSchema test = (ObjectSchema) response.getSchema();
                 if (test != null) {
                     Map<java.lang.String,io.swagger.v3.oas.models.media.Schema> properties = test.getProperties();
                     Set<String> propertiesKeys = properties.keySet();
