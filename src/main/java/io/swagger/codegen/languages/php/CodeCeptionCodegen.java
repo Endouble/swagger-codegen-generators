@@ -50,7 +50,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
     public CodeCeptionCodegen() {
         super();
-        acceptanceTemplateFiles.put("acceptance.handlebars", ".php");
+        acceptanceTemplateFiles.put("acceptance.mustache", ".php");
         embeddedTemplateDir = templateDir = "v2/CodeCeption";
 
         /*
@@ -89,7 +89,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             CodegenOperation updateOperation = operation;
             updateOperation.resolvedPath = path;
 
-            List<CodegenResponse> responses = operation.responses;
+            List<CodegenResponse> responses = updateOperation.responses;
             for (CodegenResponse response : responses) {
                 response.httpDescription = CodegenHelper.getHTTPDescription(Integer.parseInt(response.getCode()));
             }
@@ -102,7 +102,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                     Set<String> propertiesKeys = properties.keySet();
                     int counter = 0;
                     for (String key : propertiesKeys) {
-                        HashMap<String,String> keysToReplace = new HashMap<String,String>();
+                        HashMap<String, String> keysToReplace = new HashMap<String, String>();
                         keysToReplace.put("number", "float");
                         keysToReplace.put("object", "array");
 

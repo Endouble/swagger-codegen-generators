@@ -106,8 +106,9 @@ public class CodegenHelper {
     }
 
     public static String getHTTPDescription(int httpStatusCode) {
+        int defaultCode = 200;
         if (httpStatusCode <= 0) {
-            return "";
+            return "OK";
         }
 
         HashMap<Integer,String> httpCodeAndDescription = new HashMap<Integer,String>();
