@@ -146,6 +146,7 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
     protected String gitUserId, gitRepoId, releaseNote;
     protected String httpUserAgent;
     protected Boolean hideGenerationTimestamp = true;
+    protected OpenAPI openAPI;
     // How to encode special characters like $
     // They are translated to words like "Dollar" and prefixed with '
     // Then translated back during JSON encoding and decoding
@@ -184,7 +185,7 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
 
         if (additionalProperties.containsKey(CodegenConstants.ACCEPTANCE_PACKAGE)) {
             this.setAcceptancePackage((String) additionalProperties.get(CodegenConstants.ACCEPTANCE_PACKAGE));
-        } else if (StringUtils.isNotEmpty(apiPackage)) {
+        } else if (StringUtils.isNotEmpty(acceptancePackage)) {
             // not set in additionalProperties, add value from CodegenConfig in order to use it in templates
             additionalProperties.put(CodegenConstants.ACCEPTANCE_PACKAGE, acceptancePackage);
         }
@@ -1927,6 +1928,7 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
      * @return Codegen Operation object
      */
     public CodegenOperation fromOperation(String path, String httpMethod, Operation operation, Map<String, Schema> schemas, OpenAPI openAPI) {
+        this.openAPI = openAPI;
         CodegenOperation codegenOperation = CodegenModelFactory.newInstance(CodegenModelType.OPERATION);
         Set<String> imports = new HashSet<String>();
         if (operation.getExtensions() != null && !operation.getExtensions().isEmpty()) {

@@ -35,11 +35,12 @@ class {{classname}} extends TestCase
         $I->send{{httpMethod}}("{{resolvedPath}}"{{#ifEquals httpMethod 'POST'}}, ['']{{/ifEquals}});
         $I->seeResponseCodeIs(HttpCode::{{#responses}}{{#@first}}{{httpDescription}}{{/@first}}{{/responses}});
         {{#produces}}{{#ifEquals mediaType 'application/json'}}$I->seeResponseIsJson();{{else}}$I->seeResponseIsXml();{{/ifEquals}}{{/produces}}{{^produces}}{{/produces}}
-        $I->seeResponseMatchesJsonType(
+    {{#codeCeptionResponse}}    $I->seeResponseMatchesJsonType(
             [
                 {{{codeCeptionResponse}}}
             ]
         );
+    {{/codeCeptionResponse ~}}
     }
     {{/operation}}
 }

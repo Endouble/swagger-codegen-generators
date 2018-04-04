@@ -2,8 +2,10 @@ package io.swagger.codegen.languages.php;
 
 import io.swagger.codegen.*;
 import io.swagger.codegen.languages.CodegenHelper;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 
 import java.io.File;
 import java.util.*;
@@ -95,32 +97,40 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             }
 
             StringBuilder responseJson = new StringBuilder("");
-            for (CodegenResponse response : responses) {
-                ObjectSchema test = (ObjectSchema) response.getSchema();
-                if (test != null) {
-                    Map<java.lang.String,io.swagger.v3.oas.models.media.Schema> properties = test.getProperties();
-                    Set<String> propertiesKeys = properties.keySet();
-                    int counter = 0;
-                    for (String key : propertiesKeys) {
-                        HashMap<String, String> keysToReplace = new HashMap<String, String>();
-                        keysToReplace.put("number", "float");
-                        keysToReplace.put("object", "array");
+            //for (CodegenResponse response : responses) {
+                Schema responseSchema = (Schema) responses.get(0).getSchema();
+                if (responseSchema != null) {
+                    String $ref = responseSchema.get$ref();
+                    $ref = super.getSimpleRef($ref);
+                    Schema openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
+                    if (openApiResponseSchema != null) {
+                        Map<String, Schema> properties = openApiResponseSchema.getProperties();
+                        Set<String> propertiesKeys = properties.keySet();
+                        int counter = 0;
+                        for (String key : propertiesKeys) {
+                            HashMap<String, String> keysToReplace = new HashMap<String, String>();
+                            keysToReplace.put("number", "float");
+                            keysToReplace.put("object", "array");
 
-                        for (Map.Entry<String, String> entry : keysToReplace.entrySet()) {
-                            if (properties.get(key).getType().toString().equals(entry.getKey())) {
-                                properties.get(key).type(entry.getValue());
+                            for (Map.Entry<String, String> entry : keysToReplace.entrySet()) {
+                                if (properties.get(key).getType() != null) {
+                                    if (properties.get(key).getType().toString().equals(entry.getKey())) {
+                                        properties.get(key).type(entry.getValue());
+                                    }
+                                } else {
+                                    properties.get(key).type("array");
+                                }
                             }
-                        }
+                            responseJson.append("'" + key + "' => '" + properties.get(key).getType() + "'");
 
-                        responseJson.append("'" + key + "' => '" + properties.get(key).getType() + "'");
-
-                        if ((counter + 1) < propertiesKeys.size()) {
-                            responseJson.append(",\n\t\t\t\t");
+                            if ((counter + 1) < propertiesKeys.size()) {
+                                responseJson.append(",\n\t\t\t\t");
+                            }
+                            counter++;
                         }
-                        counter++;
                     }
                 }
-            }
+            //}
             updateOperation.codeCeptionResponse = responseJson.toString();
 
             if (operation.httpMethod.equals("POST")) {
