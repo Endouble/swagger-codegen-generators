@@ -15,6 +15,7 @@ import io.swagger.codegen.CodegenProperty;
 import io.swagger.codegen.CodegenResponse;
 import io.swagger.codegen.CodegenSecurity;
 import io.swagger.codegen.SupportingFile;
+import io.swagger.codegen.handlebars.helpers.BaseItemsHelper;
 import io.swagger.codegen.handlebars.helpers.BracesHelper;
 import io.swagger.codegen.handlebars.helpers.HasHelper;
 import io.swagger.codegen.handlebars.helpers.HasNotHelper;
@@ -1800,38 +1801,23 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
      * @return True if the inner most type is enum
      */
     protected Boolean isPropertyInnerMostEnum(CodegenProperty property) {
-        CodegenProperty currentProperty = property;
-        while (currentProperty != null
-                && (getBooleanValue(currentProperty, CodegenConstants.IS_MAP_CONTAINER_EXT_NAME)
-                || getBooleanValue(currentProperty, CodegenConstants.IS_LIST_CONTAINER_EXT_NAME))) {
-            currentProperty = currentProperty.items;
-        }
-        return currentProperty == null ? false : getBooleanValue(currentProperty, IS_ENUM_EXT_NAME);
+        CodegenProperty baseItem = BaseItemsHelper.getBaseItemsProperty(property);
+        return baseItem == null ? false : getBooleanValue(baseItem, IS_ENUM_EXT_NAME);
     }
+
+
 
     protected Map<String, Object> getInnerEnumAllowableValues(CodegenProperty property) {
-        CodegenProperty currentProperty = property;
-        boolean isMapContainer = getBooleanValue(property, CodegenConstants.IS_MAP_CONTAINER_EXT_NAME);
-        boolean isListContainer = getBooleanValue(property, CodegenConstants.IS_LIST_CONTAINER_EXT_NAME);
-        while (currentProperty != null && (isMapContainer || isListContainer)) {
-            currentProperty = currentProperty.items;
-        }
-
-        return currentProperty == null ? new HashMap<String, Object>() : currentProperty.allowableValues;
+        CodegenProperty baseItem = BaseItemsHelper.getBaseItemsProperty(property);
+        return baseItem == null ? new HashMap<String, Object>() : baseItem.allowableValues;
     }
-
 
     /**
      * Update datatypeWithEnum for array container
      * @param property Codegen property
      */
     protected void updateDataTypeWithEnumForArray(CodegenProperty property) {
-        CodegenProperty baseItem = property.items;
-        boolean isMapContainer = getBooleanValue(baseItem, CodegenConstants.IS_MAP_CONTAINER_EXT_NAME);
-        boolean isListContainer = getBooleanValue(baseItem, CodegenConstants.IS_LIST_CONTAINER_EXT_NAME);
-        while (baseItem != null && (isMapContainer || isListContainer)) {
-            baseItem = baseItem.items;
-        }
+        CodegenProperty baseItem = BaseItemsHelper.getBaseItemsProperty(property);
         if (baseItem != null) {
             // set both datatype and datetypeWithEnum as only the inner type is enum
             property.datatypeWithEnum = property.datatypeWithEnum.replace(baseItem.baseType, toEnumName(baseItem));
@@ -1852,12 +1838,7 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
      * @param property Codegen property
      */
     protected void updateDataTypeWithEnumForMap(CodegenProperty property) {
-        CodegenProperty baseItem = property.items;
-        boolean isMapContainer = getBooleanValue(baseItem, CodegenConstants.IS_MAP_CONTAINER_EXT_NAME);
-        boolean isListContainer = getBooleanValue(baseItem, CodegenConstants.IS_LIST_CONTAINER_EXT_NAME);
-        while (baseItem != null && (isMapContainer || isListContainer)) {
-            baseItem = baseItem.items;
-        }
+        CodegenProperty baseItem = BaseItemsHelper.getBaseItemsProperty(property);
 
         if (baseItem != null) {
             // set both datatype and datetypeWithEnum as only the inner type is enum
@@ -3010,6 +2991,11 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
         for (Map.Entry<String, Schema> entry : allSchemas.entrySet()) {
             String swaggerName = entry.getKey();
             Schema schema = entry.getValue();
+
+            if (schema instanceof ArraySchema || schema instanceof MapSchema) {
+                continue;
+            }
+
             String schemaType = getTypeOfSchema(schema);
             if (schemaType != null && !schemaType.equals("object") && schema.getEnum() == null) {
                 aliases.put(swaggerName, schemaType);
@@ -3401,6 +3387,7 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
         handlebars.registerHelper(IsNotHelper.NAME, new IsNotHelper());
         handlebars.registerHelper(HasNotHelper.NAME, new HasNotHelper());
         handlebars.registerHelper(BracesHelper.NAME, new BracesHelper());
+        handlebars.registerHelper(BaseItemsHelper.NAME, new BaseItemsHelper());
         handlebars.registerHelper(IfEqualsHelper.NAME, new IfEqualsHelper());
         handlebars.registerHelper(IfNotEqualsHelper.NAME, new IfNotEqualsHelper());
     }
