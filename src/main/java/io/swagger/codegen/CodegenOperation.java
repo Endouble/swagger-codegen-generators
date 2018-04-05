@@ -19,7 +19,8 @@ public class CodegenOperation implements VendorExtendable {
     public final List<CodegenProperty> responseHeaders = new ArrayList<CodegenProperty>();
     public boolean returnTypeIsPrimitive, returnSimpleType, subresourceOperation;
     public String path, resolvedPath, operationId, returnType, httpMethod, returnBaseType,
-            returnContainer, summary, unescapedNotes, notes, baseName, defaultResponse, codeCeptionResponse;
+            returnContainer, summary, unescapedNotes, notes, baseName, defaultResponse, codeCeptionResponse,
+            codeCeptionRequestBody;
     public Discriminator discriminator;
     public List<Map<String, String>> consumes, produces, prioritizedContentTypes;
     public CodegenParameter bodyParam;
@@ -361,6 +362,10 @@ public class CodegenOperation implements VendorExtendable {
 
     public String getCodeCeptionResponse() {
         return codeCeptionResponse;
+    }
+
+    public String getCodeCeptionRequestBody() {
+        return codeCeptionRequestBody;
     }
 
     public Discriminator getDiscriminator() {

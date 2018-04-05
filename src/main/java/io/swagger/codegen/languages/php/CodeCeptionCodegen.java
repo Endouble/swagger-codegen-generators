@@ -96,37 +96,92 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 response.httpDescription = CodegenHelper.getHTTPDescription(Integer.parseInt(response.getCode()));
             }
 
+            StringBuilder requestBodyJson = new StringBuilder("");
+            List<CodegenParameter> bodyParams = updateOperation.getBodyParams();
+            if (bodyParams != null) {
+                for (CodegenParameter bodyParam : bodyParams) {
+//                    if (operation.operationId.equals("addPet")) {
+//                        System.out.println(bodyParam.getDataType());
+//                        System.out.println(super.openAPI.getComponents().getSchemas().get(
+//                                "Pet"
+//                        ));
+//                        System.out.println(bodyParam.getDataType());
+//                    }
+                    ObjectSchema requestBody = (ObjectSchema) super.openAPI.getComponents().getSchemas().get(
+                            bodyParam.getBaseName()
+                    );
+
+                    if (requestBody != null) {
+                        List<String> requiredFields = requestBody.getRequired();
+                        if (requiredFields != null && requiredFields.size() > 0) {
+                            int counter = 0;
+                            for (String requiredField : requiredFields) {
+                                Schema requiredFieldSchema = requestBody.getProperties().get(requiredField);
+                                if (requiredFieldSchema != null) {
+                                    String fakerMethod = CodegenHelper.getFakerMethod(
+                                            "$this->faker->",
+                                            requiredFieldSchema.getType(),
+                                            requiredFieldSchema.getFormat()
+                                    );
+                                    requestBodyJson.append("'" + requiredField + "' => " + fakerMethod);
+
+                                    if ((counter + 1) < requiredFields.size()) {
+                                        requestBodyJson.append(",\n\t\t\t\t");
+                                    }
+                                }
+
+                                counter++;
+                            }
+                        }
+                    }
+                }
+            }
+            updateOperation.codeCeptionRequestBody = requestBodyJson.toString();
+
             StringBuilder responseJson = new StringBuilder("");
             //for (CodegenResponse response : responses) {
                 Schema responseSchema = (Schema) responses.get(0).getSchema();
                 if (responseSchema != null) {
                     String $ref = responseSchema.get$ref();
-                    $ref = super.getSimpleRef($ref);
-                    Schema openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
-                    if (openApiResponseSchema != null) {
-                        Map<String, Schema> properties = openApiResponseSchema.getProperties();
-                        Set<String> propertiesKeys = properties.keySet();
-                        int counter = 0;
-                        for (String key : propertiesKeys) {
-                            HashMap<String, String> keysToReplace = new HashMap<String, String>();
-                            keysToReplace.put("number", "float");
-                            keysToReplace.put("object", "array");
+                    if ($ref != null) {
+                        $ref = super.getSimpleRef($ref);
+                        Schema openApiResponseSchema = null;
+                        if (super.openAPI.getComponents().getResponses() != null) {
+                            if (super.openAPI.getComponents().getResponses().get($ref) != null) {
+                                openApiResponseSchema = super.openAPI.getComponents().getResponses().get($ref).
+                                        getContent().get("application/json").getSchema();
+                            } else {
+                                openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
+                            }
+                        } else {
+                            openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
+                        }
 
-                            for (Map.Entry<String, String> entry : keysToReplace.entrySet()) {
-                                if (properties.get(key).getType() != null) {
-                                    if (properties.get(key).getType().toString().equals(entry.getKey())) {
-                                        properties.get(key).type(entry.getValue());
+                        if (openApiResponseSchema != null) {
+                            Map<String, Schema> properties = openApiResponseSchema.getProperties();
+                            Set<String> propertiesKeys = properties.keySet();
+                            int counter = 0;
+                            for (String key : propertiesKeys) {
+                                HashMap<String, String> keysToReplace = new HashMap<String, String>();
+                                keysToReplace.put("number", "float");
+                                keysToReplace.put("object", "array");
+
+                                for (Map.Entry<String, String> entry : keysToReplace.entrySet()) {
+                                    if (properties.get(key).getType() != null) {
+                                        if (properties.get(key).getType().toString().equals(entry.getKey())) {
+                                            properties.get(key).type(entry.getValue());
+                                        }
+                                    } else {
+                                        properties.get(key).type("array");
                                     }
-                                } else {
-                                    properties.get(key).type("array");
                                 }
-                            }
-                            responseJson.append("'" + key + "' => '" + properties.get(key).getType() + "'");
+                                responseJson.append("'" + key + "' => '" + properties.get(key).getType() + "'");
 
-                            if ((counter + 1) < propertiesKeys.size()) {
-                                responseJson.append(",\n\t\t\t\t");
+                                if ((counter + 1) < propertiesKeys.size()) {
+                                    responseJson.append(",\n\t\t\t\t");
+                                }
+                                counter++;
                             }
-                            counter++;
                         }
                     }
                 }

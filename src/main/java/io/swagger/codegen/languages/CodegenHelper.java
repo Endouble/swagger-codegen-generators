@@ -201,9 +201,9 @@ public class CodegenHelper {
         keysToReplace.put(Arrays.asList("boolean", ""), fakerVariable + "boolean()");
 
         if (
-                keysToReplace.get(Arrays.asList(type, format)) == null
-                        || keysToReplace.get(Arrays.asList(type, format)).isEmpty()
-                ) {
+            keysToReplace.get(Arrays.asList(type, format)) == null
+                    || keysToReplace.get(Arrays.asList(type, format)).isEmpty()
+            ) {
             return "null";
         }
 

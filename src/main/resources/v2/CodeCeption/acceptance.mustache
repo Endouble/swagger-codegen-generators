@@ -32,7 +32,11 @@ class {{classname}} extends TestCase
         {{#if pathParams}}{{#pathParams}}${{paramName}} = ''; //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
         {{/pathParams}}{{/if ~}}
 
-        $I->send{{httpMethod}}("{{resolvedPath}}"{{#ifEquals httpMethod 'POST'}}, ['']{{/ifEquals}});
+        $I->send{{httpMethod}}("{{resolvedPath}}"{{#ifEquals httpMethod 'POST'}}, json_encode(
+            [
+                {{{codeCeptionRequestBody}}}
+            ]
+        ){{/ifEquals ~}});
         $I->seeResponseCodeIs(HttpCode::{{#responses}}{{#@first}}{{httpDescription}}{{/@first}}{{/responses}});
         {{#produces}}{{#ifEquals mediaType 'application/json'}}$I->seeResponseIsJson();{{else}}$I->seeResponseIsXml();{{/ifEquals}}{{/produces}}{{^produces}}{{/produces}}
     {{#codeCeptionResponse}}    $I->seeResponseMatchesJsonType(
