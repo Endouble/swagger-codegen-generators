@@ -2,10 +2,12 @@ package io.swagger.codegen.languages.php;
 
 import io.swagger.codegen.*;
 import io.swagger.codegen.languages.CodegenHelper;
-import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
-import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 
 import java.io.File;
 import java.util.*;
@@ -14,6 +16,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 {
      @SuppressWarnings("hiding")
     protected String apiVersion = "1.0.0";
+
 
     /**
      * Configures the type of generator.
@@ -79,9 +82,18 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
         List<CodegenOperation> ops = (List<CodegenOperation>) operations.get("operation");
 
         int operationCounter = 0;
-        
+        Paths paths = this.openAPI.getPaths();
+//        for (String resourcePath : paths.keySet()) {
+//            PathItem path = paths.get(resourcePath);
+//            Operation postOperation = path.getPost();
+//            if (postOperation != null) {
+//                System.out.println(postOperation.getOperationId());
+//            }
+//        }
+
         for (CodegenOperation operation : ops) {
             String path = operation.path;
+            PathItem pathItem = paths.get(path);
             if (operation.pathParams.size() > 0) {
                 for (CodegenParameter pathParam : operation.pathParams) {
                     path = path.replace("{" + pathParam.baseName + "}", "$" + pathParam.baseName);
@@ -96,41 +108,70 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 response.httpDescription = CodegenHelper.getHTTPDescription(Integer.parseInt(response.getCode()));
             }
 
+
+            //TODO Think about array and objects.
             StringBuilder requestBodyJson = new StringBuilder("");
-            List<CodegenParameter> bodyParams = updateOperation.getBodyParams();
-            if (bodyParams != null) {
-                for (CodegenParameter bodyParam : bodyParams) {
-//                    if (operation.operationId.equals("addPet")) {
-//                        System.out.println(bodyParam.getDataType());
-//                        System.out.println(super.openAPI.getComponents().getSchemas().get(
-//                                "Pet"
-//                        ));
-//                        System.out.println(bodyParam.getDataType());
-//                    }
-                    ObjectSchema requestBody = (ObjectSchema) super.openAPI.getComponents().getSchemas().get(
-                            bodyParam.getBaseName()
-                    );
+            if (pathItem != null) {
+                Operation postOperation = pathItem.getPost();
+                if (postOperation != null) {
+                    if (postOperation.getOperationId().equals(operation.getOperationId())) {
+                        RequestBody requestBody = postOperation.getRequestBody();
+                        Schema requestBodySchema = requestBody.getContent()
+                                .get("application/json").getSchema();
+                        String $ref = requestBodySchema.get$ref();
+                        if ($ref != null) {
+                            $ref = super.getSimpleRef($ref);
+                            ObjectSchema openApiRequestBodySchema = null;
+                            if (super.openAPI.getComponents().getRequestBodies() != null) {
+                                if (super.openAPI.getComponents().getRequestBodies().get($ref) != null) {
+                                    openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getRequestBodies().get($ref).
+                                            getContent().get("application/json").getSchema();
+                                } else {
+                                    openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get($ref);
+                                }
+                            } else {
+                                openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get($ref);
+                            }
 
-                    if (requestBody != null) {
-                        List<String> requiredFields = requestBody.getRequired();
-                        if (requiredFields != null && requiredFields.size() > 0) {
-                            int counter = 0;
-                            for (String requiredField : requiredFields) {
-                                Schema requiredFieldSchema = requestBody.getProperties().get(requiredField);
-                                if (requiredFieldSchema != null) {
-                                    String fakerMethod = CodegenHelper.getFakerMethod(
-                                            "$this->faker->",
-                                            requiredFieldSchema.getType(),
-                                            requiredFieldSchema.getFormat()
-                                    );
-                                    requestBodyJson.append("'" + requiredField + "' => " + fakerMethod);
+                            if (openApiRequestBodySchema != null) {
+                                List<String> requiredFields = openApiRequestBodySchema.getRequired();
+                                if (requiredFields != null && requiredFields.size() > 0) {
+                                    int counter = 0;
+                                    for (String requiredField : requiredFields) {
+                                        Schema requiredFieldSchema = openApiRequestBodySchema.getProperties().get(requiredField);
+                                        if (requiredFieldSchema != null) {
+                                            String fakerMethod = CodegenHelper.getFakerMethod(
+                                                    "$this->faker->",
+                                                    requiredFieldSchema.getType(),
+                                                    requiredFieldSchema.getFormat()
+                                            );
+                                            requestBodyJson.append("'" + requiredField + "' => " + fakerMethod);
 
-                                    if ((counter + 1) < requiredFields.size()) {
-                                        requestBodyJson.append(",\n\t\t\t\t");
+                                            if ((counter + 1) < requiredFields.size()) {
+                                                requestBodyJson.append(",\n\t\t\t\t");
+                                            }
+                                        }
+
+                                        counter++;
+                                    }
+                                } else {
+                                    Map<String, Schema> properties = openApiRequestBodySchema.getProperties();
+                                    Set<String> propertiesKeys = properties.keySet();
+                                    int counter = 0;
+                                    for (String key : propertiesKeys) {
+                                        String fakerMethod = CodegenHelper.getFakerMethod(
+                                                "$this->faker->",
+                                                properties.get(key).getType(),
+                                                properties.get(key).getFormat()
+                                        );
+                                        requestBodyJson.append("'" + key + "' => " + fakerMethod);
+
+                                        if ((counter + 1) < propertiesKeys.size()) {
+                                            requestBodyJson.append(",\n\t\t\t\t");
+                                        }
+                                        counter++;
                                     }
                                 }
-
-                                counter++;
                             }
                         }
                     }
