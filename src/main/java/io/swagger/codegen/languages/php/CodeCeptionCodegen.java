@@ -116,60 +116,139 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 if (postOperation != null) {
                     if (postOperation.getOperationId().equals(operation.getOperationId())) {
                         RequestBody requestBody = postOperation.getRequestBody();
-                        Schema requestBodySchema = requestBody.getContent()
-                                .get("application/json").getSchema();
-                        String $ref = requestBodySchema.get$ref();
-                        if ($ref != null) {
-                            $ref = super.getSimpleRef($ref);
-                            ObjectSchema openApiRequestBodySchema = null;
-                            if (super.openAPI.getComponents().getRequestBodies() != null) {
-                                if (super.openAPI.getComponents().getRequestBodies().get($ref) != null) {
-                                    openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getRequestBodies().get($ref).
-                                            getContent().get("application/json").getSchema();
-                                } else {
-                                    openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get($ref);
-                                }
-                            } else {
-                                openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get($ref);
+                        if (postOperation.getRequestBody().get$ref() != null) {
+                            String $ref = postOperation.getRequestBody().get$ref();
+                            if ($ref != null) {
+                                $ref = super.getSimpleRef($ref);
                             }
-
-                            if (openApiRequestBodySchema != null) {
-                                List<String> requiredFields = openApiRequestBodySchema.getRequired();
-                                if (requiredFields != null && requiredFields.size() > 0) {
-                                    int counter = 0;
-                                    for (String requiredField : requiredFields) {
-                                        Schema requiredFieldSchema = openApiRequestBodySchema.getProperties().get(requiredField);
-                                        if (requiredFieldSchema != null) {
-                                            String fakerMethod = CodegenHelper.getFakerMethod(
-                                                    "$this->faker->",
-                                                    requiredFieldSchema.getType(),
-                                                    requiredFieldSchema.getFormat()
-                                            );
-                                            requestBodyJson.append("'" + requiredField + "' => " + fakerMethod);
-
-                                            if ((counter + 1) < requiredFields.size()) {
-                                                requestBodyJson.append(",\n\t\t\t\t");
-                                            }
+                            System.out.println(super.openAPI.getComponents().getRequestBodies().get($ref));
+                        } else {
+                            Set<String> requestBodyKeySet = requestBody.getContent().keySet();
+                            String requestBodyContentKey = requestBodyKeySet.iterator().next();
+                            Schema requestBodySchema = requestBody.getContent().get(requestBodyContentKey).getSchema();
+                            if (requestBodySchema != null) {
+                                String $ref = requestBodySchema.get$ref();
+                                if ($ref != null) {
+                                    $ref = super.getSimpleRef($ref);
+                                    ObjectSchema openApiRequestBodySchema = null;
+                                    if (super.openAPI.getComponents().getRequestBodies() != null) {
+                                        if (super.openAPI.getComponents().getRequestBodies().get($ref) != null) {
+                                            openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getRequestBodies().get($ref).
+                                                    getContent().get("application/json").getSchema();
+                                        } else {
+                                            openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get($ref);
                                         }
-
-                                        counter++;
+                                    } else {
+                                        openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get($ref);
                                     }
-                                } else {
-                                    Map<String, Schema> properties = openApiRequestBodySchema.getProperties();
-                                    Set<String> propertiesKeys = properties.keySet();
-                                    int counter = 0;
-                                    for (String key : propertiesKeys) {
-                                        String fakerMethod = CodegenHelper.getFakerMethod(
-                                                "$this->faker->",
-                                                properties.get(key).getType(),
-                                                properties.get(key).getFormat()
-                                        );
-                                        requestBodyJson.append("'" + key + "' => " + fakerMethod);
 
-                                        if ((counter + 1) < propertiesKeys.size()) {
-                                            requestBodyJson.append(",\n\t\t\t\t");
+                                    if (openApiRequestBodySchema != null) {
+                                        List<String> requiredFields = openApiRequestBodySchema.getRequired();
+                                        if (requiredFields != null && requiredFields.size() > 0) {
+                                            int counter = 0;
+                                            for (String requiredField : requiredFields) {
+                                                Schema requiredFieldSchema = openApiRequestBodySchema.getProperties().get(requiredField);
+                                                if (requiredFieldSchema != null) {
+                                                    String fakerMethod = CodegenHelper.getFakerMethod(
+                                                            "$this->faker->",
+                                                            requiredFieldSchema.getType(),
+                                                            requiredFieldSchema.getFormat()
+                                                    );
+                                                    requestBodyJson.append("'" + requiredField + "' => " + fakerMethod);
+
+                                                    if ((counter + 1) < requiredFields.size()) {
+                                                        requestBodyJson.append(",\n\t\t\t\t");
+                                                    }
+                                                }
+
+                                                counter++;
+                                            }
+                                        } else {
+                                            //System.out.println(operation.operationId);
+                                            Map<String, Schema> properties = openApiRequestBodySchema.getProperties();
+                                            Set<String> propertiesKeys = properties.keySet();
+                                            int counter = 0;
+                                            for (String key : propertiesKeys) {
+                                                Map<String, Schema> propertiesFields = properties;
+                                                String propertiesRef = propertiesFields.get(key).get$ref();
+                                                if (propertiesRef == null) {
+                                                    String fakerMethod = CodegenHelper.getFakerMethod(
+                                                            "$this->faker->",
+                                                            propertiesFields.get(key).getType(),
+                                                            propertiesFields.get(key).getFormat()
+                                                    );
+                                                    requestBodyJson.append("'" + key + "' => " + fakerMethod);
+                                                    if ((counter + 1) < propertiesKeys.size()) {
+                                                        requestBodyJson.append(",\n\t\t\t\t");
+                                                    }
+                                                } else {
+                                                    requestBodyJson.append("'" + key + "' => [");
+                                                    requestBodyJson.append("\n");
+
+                                                    requestBodyJson.append("\n\t\t\t\t");
+                                                    requestBodyJson.append("]");
+                                                    if ((counter + 1) < propertiesKeys.size()) {
+                                                        requestBodyJson.append(",\n\t\t\t\t");
+                                                    }
+                                                    counter++;
+
+//                                                    Map<String, Schema> propertiesFields = properties;
+//
+//                                                    while (propertiesRef != null) {
+//                                                        propertiesRef = super.getSimpleRef(propertiesRef);
+//                                                        ObjectSchema objectSchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get(propertiesRef);
+//                                                        propertiesRef = objectSchema.get$ref();
+//
+//                                                        if (objectSchema.get$ref() == null) {
+//                                                            propertiesFields = objectSchema.getProperties();
+//                                                        }
+//                                                    }
+//                                                    if (propertiesRef == null) {
+//                                                        String fakerMethod = CodegenHelper.getFakerMethod(
+//                                                                "$this->faker->",
+//                                                                propertiesFields.get(key).getType(),
+//                                                                propertiesFields.get(key).getFormat()
+//                                                        );
+//                                                        requestBodyJson.append("'" + key + "' => " + fakerMethod);
+//
+//                                                        if ((counter + 1) < propertiesKeys.size()) {
+//                                                            requestBodyJson.append(",\n\t\t\t\t");
+//                                                        }
+//                                                    }
+                                                }
+                                            }
+
+
+//                                            Map<String, Schema> properties = openApiRequestBodySchema.getProperties();
+//                                            Set<String> propertiesKeys = properties.keySet();
+//                                            int counter = 0;
+//                                            for (String key : propertiesKeys) {
+//                                                Map<String, Schema> propertiesFields = properties;
+//                                                String propertiesRef = propertiesFields.get(key).get$ref();
+//                                                while (propertiesRef != null) {
+//                                                    propertiesRef = super.getSimpleRef(propertiesRef);
+//                                                    ObjectSchema objectSchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get(propertiesRef);
+//                                                    propertiesRef = objectSchema.get$ref();
+//
+//                                                    if (objectSchema.get$ref() == null) {
+//                                                        propertiesFields = objectSchema.getProperties();
+//                                                    }
+//                                                }
+//                                                if (propertiesRef == null) {
+//                                                    String fakerMethod = CodegenHelper.getFakerMethod(
+//                                                            "$this->faker->",
+//                                                            propertiesFields.get(key).getType(),
+//                                                            propertiesFields.get(key).getFormat()
+//                                                    );
+//                                                    requestBodyJson.append("'" + key + "' => " + fakerMethod);
+//
+//                                                    if ((counter + 1) < propertiesKeys.size()) {
+//                                                        requestBodyJson.append(",\n\t\t\t\t");
+//                                                    }
+//                                                }
+//                                                counter++;
+//                                            }
                                         }
-                                        counter++;
                                     }
                                 }
                             }
