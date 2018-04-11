@@ -5,6 +5,7 @@ import io.swagger.codegen.languages.CodegenHelper;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
@@ -116,141 +117,46 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 if (postOperation != null) {
                     if (postOperation.getOperationId().equals(operation.getOperationId())) {
                         RequestBody requestBody = postOperation.getRequestBody();
-                        if (postOperation.getRequestBody().get$ref() != null) {
-                            String $ref = postOperation.getRequestBody().get$ref();
-                            if ($ref != null) {
-                                $ref = super.getSimpleRef($ref);
-                            }
-                            System.out.println(super.openAPI.getComponents().getRequestBodies().get($ref));
-                        } else {
-                            Set<String> requestBodyKeySet = requestBody.getContent().keySet();
-                            String requestBodyContentKey = requestBodyKeySet.iterator().next();
-                            Schema requestBodySchema = requestBody.getContent().get(requestBodyContentKey).getSchema();
-                            if (requestBodySchema != null) {
-                                String $ref = requestBodySchema.get$ref();
-                                if ($ref != null) {
-                                    $ref = super.getSimpleRef($ref);
-                                    ObjectSchema openApiRequestBodySchema = null;
-                                    if (super.openAPI.getComponents().getRequestBodies() != null) {
-                                        if (super.openAPI.getComponents().getRequestBodies().get($ref) != null) {
-                                            openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getRequestBodies().get($ref).
-                                                    getContent().get("application/json").getSchema();
-                                        } else {
-                                            openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get($ref);
-                                        }
-                                    } else {
-                                        openApiRequestBodySchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get($ref);
-                                    }
-
-                                    if (openApiRequestBodySchema != null) {
-                                        List<String> requiredFields = openApiRequestBodySchema.getRequired();
-                                        if (requiredFields != null && requiredFields.size() > 0) {
-                                            int counter = 0;
-                                            for (String requiredField : requiredFields) {
-                                                Schema requiredFieldSchema = openApiRequestBodySchema.getProperties().get(requiredField);
-                                                if (requiredFieldSchema != null) {
-                                                    String fakerMethod = CodegenHelper.getFakerMethod(
-                                                            "$this->faker->",
-                                                            requiredFieldSchema.getType(),
-                                                            requiredFieldSchema.getFormat()
-                                                    );
-                                                    requestBodyJson.append("'" + requiredField + "' => " + fakerMethod);
-
-                                                    if ((counter + 1) < requiredFields.size()) {
-                                                        requestBodyJson.append(",\n\t\t\t\t");
-                                                    }
-                                                }
-
-                                                counter++;
-                                            }
-                                        } else {
-                                            //System.out.println(operation.operationId);
-                                            Map<String, Schema> properties = openApiRequestBodySchema.getProperties();
-                                            Set<String> propertiesKeys = properties.keySet();
-                                            int counter = 0;
-                                            for (String key : propertiesKeys) {
-                                                Map<String, Schema> propertiesFields = properties;
-                                                String propertiesRef = propertiesFields.get(key).get$ref();
-                                                if (propertiesRef == null) {
-                                                    String fakerMethod = CodegenHelper.getFakerMethod(
-                                                            "$this->faker->",
-                                                            propertiesFields.get(key).getType(),
-                                                            propertiesFields.get(key).getFormat()
-                                                    );
-                                                    requestBodyJson.append("'" + key + "' => " + fakerMethod);
-                                                    if ((counter + 1) < propertiesKeys.size()) {
-                                                        requestBodyJson.append(",\n\t\t\t\t");
-                                                    }
-                                                } else {
-                                                    requestBodyJson.append("'" + key + "' => [");
-                                                    requestBodyJson.append("\n");
-
-                                                    requestBodyJson.append("\n\t\t\t\t");
-                                                    requestBodyJson.append("]");
-                                                    if ((counter + 1) < propertiesKeys.size()) {
-                                                        requestBodyJson.append(",\n\t\t\t\t");
-                                                    }
-                                                    counter++;
-
-//                                                    Map<String, Schema> propertiesFields = properties;
-//
-//                                                    while (propertiesRef != null) {
-//                                                        propertiesRef = super.getSimpleRef(propertiesRef);
-//                                                        ObjectSchema objectSchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get(propertiesRef);
-//                                                        propertiesRef = objectSchema.get$ref();
-//
-//                                                        if (objectSchema.get$ref() == null) {
-//                                                            propertiesFields = objectSchema.getProperties();
-//                                                        }
-//                                                    }
-//                                                    if (propertiesRef == null) {
-//                                                        String fakerMethod = CodegenHelper.getFakerMethod(
-//                                                                "$this->faker->",
-//                                                                propertiesFields.get(key).getType(),
-//                                                                propertiesFields.get(key).getFormat()
-//                                                        );
-//                                                        requestBodyJson.append("'" + key + "' => " + fakerMethod);
-//
-//                                                        if ((counter + 1) < propertiesKeys.size()) {
-//                                                            requestBodyJson.append(",\n\t\t\t\t");
-//                                                        }
-//                                                    }
-                                                }
-                                            }
-
-
-//                                            Map<String, Schema> properties = openApiRequestBodySchema.getProperties();
-//                                            Set<String> propertiesKeys = properties.keySet();
-//                                            int counter = 0;
-//                                            for (String key : propertiesKeys) {
-//                                                Map<String, Schema> propertiesFields = properties;
-//                                                String propertiesRef = propertiesFields.get(key).get$ref();
-//                                                while (propertiesRef != null) {
-//                                                    propertiesRef = super.getSimpleRef(propertiesRef);
-//                                                    ObjectSchema objectSchema = (ObjectSchema) super.openAPI.getComponents().getSchemas().get(propertiesRef);
-//                                                    propertiesRef = objectSchema.get$ref();
-//
-//                                                    if (objectSchema.get$ref() == null) {
-//                                                        propertiesFields = objectSchema.getProperties();
-//                                                    }
-//                                                }
-//                                                if (propertiesRef == null) {
-//                                                    String fakerMethod = CodegenHelper.getFakerMethod(
-//                                                            "$this->faker->",
-//                                                            propertiesFields.get(key).getType(),
-//                                                            propertiesFields.get(key).getFormat()
-//                                                    );
-//                                                    requestBodyJson.append("'" + key + "' => " + fakerMethod);
-//
-//                                                    if ((counter + 1) < propertiesKeys.size()) {
-//                                                        requestBodyJson.append(",\n\t\t\t\t");
-//                                                    }
-//                                                }
-//                                                counter++;
-//                                            }
-                                        }
-                                    }
+                        String $ref = "";
+                        Schema openApiRequestBodySchema = null;
+                        while ($ref != null) {
+                            if (postOperation.getRequestBody().get$ref() != null) {
+                                //System.out.println(super.openAPI.getComponents().getRequestBodies().get(super.getSimpleRef(postOperation.getRequestBody().get$ref())));
+//                                $ref = postOperation.getRequestBody().get$ref();
+//                                if ($ref != null) {
+//                                    $ref = super.getSimpleRef($ref);
+//                                    if (super.openAPI.getComponents().getRequestBodies() != null) {
+//                                        if (super.openAPI.getComponents().getRequestBodies().get($ref) != null) {
+//                                            openApiRequestBodySchema = super.openAPI.getComponents().getRequestBodies().get($ref).
+//                                                    getContent().get("application/json").getSchema();
+//                                            $ref = super.openAPI.getComponents().getRequestBodies().get($ref).
+//                                                    getContent().get("application/json").getSchema().get$ref();
+//                                        } else {
+//                                            openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
+//                                            $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
+//                                        }
+//                                    } else {
+//                                        openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
+//                                        $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
+//                                    }
+//                                }
+                            } else if (postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref() != null) {
+                                //System.out.println(postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref());
+                            } else {
+                                openApiRequestBodySchema = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema();
+                                if(openApiRequestBodySchema != null) {
+                                    String fakerMethod = CodegenHelper.getFakerMethod(
+                                            "$this->faker->",
+                                            openApiRequestBodySchema.getType(),
+                                            openApiRequestBodySchema.getFormat()
+                                    );
+                                    requestBodyJson.append("'" + openApiRequestBodySchema.getName() + "' => " + fakerMethod);
                                 }
+                                break;
+                            }
+
+                            if ($ref == null || $ref.isEmpty()) {
+                                break;
                             }
                         }
                     }

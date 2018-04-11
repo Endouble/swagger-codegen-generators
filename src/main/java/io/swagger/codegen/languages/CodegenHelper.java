@@ -192,10 +192,13 @@ public class CodegenHelper {
         keysToReplace.put(Arrays.asList("string", "email"), fakerVariable + "email");
         keysToReplace.put(Arrays.asList("string", "ipv4"), fakerVariable + "ipv4");
         keysToReplace.put(Arrays.asList("string", "ipv6"), fakerVariable + "ipv6");
-        keysToReplace.put(Arrays.asList("integer", ""), fakerVariable + "numberBetween()");
-        keysToReplace.put(Arrays.asList("integer", "int32"), fakerVariable + "numberBetween()");
-        keysToReplace.put(Arrays.asList("integer", "int64"), fakerVariable + "numberBetween()");
-        keysToReplace.put(Arrays.asList("number", ""), fakerVariable + "numberBetween()");
+        keysToReplace.put(Arrays.asList("string", "binary"), fakerVariable + "text()");
+        keysToReplace.put(Arrays.asList("integer", ""), fakerVariable + "randomNumber()");
+        keysToReplace.put(Arrays.asList("integer", "int32"),
+                fakerVariable + "numberBetween(" + Integer.MIN_VALUE + ", " + Integer.MAX_VALUE + ")");
+        keysToReplace.put(Arrays.asList("integer", "int64"),
+                fakerVariable + "numberBetween(" + Long.MIN_VALUE + ", " + Long.MAX_VALUE + ")");
+        keysToReplace.put(Arrays.asList("number", ""), fakerVariable + "randomNumber()");
         keysToReplace.put(Arrays.asList("number", "float"), fakerVariable + "randomFloat()");
         keysToReplace.put(Arrays.asList("number", "double"), fakerVariable + "randomFloat()");
         keysToReplace.put(Arrays.asList("boolean", ""), fakerVariable + "boolean()");
