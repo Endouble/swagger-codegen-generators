@@ -119,32 +119,92 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                         RequestBody requestBody = postOperation.getRequestBody();
                         String $ref = "";
                         Schema openApiRequestBodySchema = null;
-                        while ($ref != null) {
-                            if (postOperation.getRequestBody().get$ref() != null) {
-                                //System.out.println(super.openAPI.getComponents().getRequestBodies().get(super.getSimpleRef(postOperation.getRequestBody().get$ref())));
-//                                $ref = postOperation.getRequestBody().get$ref();
-//                                if ($ref != null) {
-//                                    $ref = super.getSimpleRef($ref);
-//                                    if (super.openAPI.getComponents().getRequestBodies() != null) {
-//                                        if (super.openAPI.getComponents().getRequestBodies().get($ref) != null) {
-//                                            openApiRequestBodySchema = super.openAPI.getComponents().getRequestBodies().get($ref).
-//                                                    getContent().get("application/json").getSchema();
-//                                            $ref = super.openAPI.getComponents().getRequestBodies().get($ref).
-//                                                    getContent().get("application/json").getSchema().get$ref();
-//                                        } else {
-//                                            openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
-//                                            $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
-//                                        }
-//                                    } else {
-//                                        openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
-//                                        $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
-//                                    }
-//                                }
-                            } else if (postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref() != null) {
-                                //System.out.println(postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref());
-                            } else {
-                                openApiRequestBodySchema = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema();
-                                if(openApiRequestBodySchema != null) {
+                        if (postOperation.getRequestBody().get$ref() != null) {
+                            //System.out.println(super.openAPI.getComponents().getRequestBodies().get(super.getSimpleRef(postOperation.getRequestBody().get$ref())));
+                            $ref = postOperation.getRequestBody().get$ref();
+                            while ($ref != null) {
+                                if ($ref.contains("requestBodies")) {
+                                    $ref = super.getSimpleRef($ref);
+                                    openApiRequestBodySchema = super.openAPI.getComponents().getRequestBodies().get($ref).
+                                            getContent().get("application/json").getSchema();
+                                    $ref = super.openAPI.getComponents().getRequestBodies().get($ref).
+                                            getContent().get("application/json").getSchema().get$ref();
+                                } else {
+                                    $ref = super.getSimpleRef($ref);
+                                    openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
+                                    $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
+                                }
+                            }
+                        } else if (postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref() != null) {
+                            $ref = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref();
+                            while ($ref != null) {
+                                if ($ref.contains("requestBodies")) {
+                                    $ref = super.getSimpleRef($ref);
+                                    openApiRequestBodySchema = super.openAPI.getComponents().getRequestBodies().get($ref).
+                                            getContent().get("application/json").getSchema();
+                                    $ref = super.openAPI.getComponents().getRequestBodies().get($ref).
+                                            getContent().get("application/json").getSchema().get$ref();
+                                } else {
+                                    $ref = super.getSimpleRef($ref);
+                                    openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
+                                    $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
+                                }
+                            }
+                        } else {
+                            openApiRequestBodySchema = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema();
+                        }
+
+                        if ($ref == null || $ref.isEmpty()) {
+                            if (openApiRequestBodySchema != null) {
+                                if (openApiRequestBodySchema.getProperties() != null) {
+                                    Map<String, Schema> properties = openApiRequestBodySchema.getProperties();
+                                    Set<String> propertiesKeys = properties.keySet();
+                                    int counter = 0;
+                                    for (String key : propertiesKeys) {
+                                        String type = properties.get(key).getType();
+                                        String format = properties.get(key).getFormat();
+
+                                        if (properties.get(key).get$ref() != null) {
+                                            requestBodyJson.append("'" + key + "' => [\n\t\t\t\t\t");
+                                            Schema propertyOpenApiRequestBodySchema = null;
+                                            String property$ref = properties.get(key).get$ref();
+                                            while (property$ref != null) {
+                                                property$ref = super.getSimpleRef(property$ref);
+                                                propertyOpenApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get(property$ref);
+                                                property$ref = super.openAPI.getComponents().getSchemas().get(property$ref).get$ref();
+                                            }
+                                            Map<String, Schema> propertiesOfProperty = propertyOpenApiRequestBodySchema.getProperties();
+                                            Set<String> propertiesKeysOfProperty = propertiesOfProperty.keySet();
+                                            int propertyCounter = 0;
+                                            for (String keyOfProperty : propertiesKeysOfProperty) {
+                                                String fakerMethod = CodegenHelper.getFakerMethod(
+                                                        "$this->faker->",
+                                                        propertiesOfProperty.get(keyOfProperty).getType(),
+                                                        propertiesOfProperty.get(keyOfProperty).getFormat()
+                                                );
+                                                requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
+
+                                                if ((propertyCounter + 1) < propertiesKeysOfProperty.size()) {
+                                                    requestBodyJson.append(",\n\t\t\t\t\t");
+                                                }
+                                                propertyCounter++;
+                                            }
+                                            requestBodyJson.append("\n\t\t\t\t]");
+                                        } else {
+                                            String fakerMethod = CodegenHelper.getFakerMethod(
+                                                    "$this->faker->",
+                                                    type,
+                                                    format
+                                            );
+                                            requestBodyJson.append("'" + key + "' => " + fakerMethod);
+                                        }
+
+                                        if ((counter + 1) < propertiesKeys.size()) {
+                                            requestBodyJson.append(",\n\t\t\t\t");
+                                        }
+                                        counter++;
+                                    }
+                                } else {
                                     String fakerMethod = CodegenHelper.getFakerMethod(
                                             "$this->faker->",
                                             openApiRequestBodySchema.getType(),
@@ -152,11 +212,6 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                     );
                                     requestBodyJson.append("'" + openApiRequestBodySchema.getName() + "' => " + fakerMethod);
                                 }
-                                break;
-                            }
-
-                            if ($ref == null || $ref.isEmpty()) {
-                                break;
                             }
                         }
                     }
@@ -213,10 +268,6 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 }
             //}
             updateOperation.codeCeptionResponse = responseJson.toString();
-
-            if (operation.httpMethod.equals("POST")) {
-                operations.put("postMethod", operation.operationId);
-            }
 
             ops.set(operationCounter, updateOperation);
             operationCounter++;

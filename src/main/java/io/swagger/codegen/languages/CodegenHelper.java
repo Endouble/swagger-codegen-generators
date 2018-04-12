@@ -174,7 +174,7 @@ public class CodegenHelper {
     }
 
     public static String getFakerMethod(String fakerVariable, String type, String format) {
-        if (fakerVariable.isEmpty() || fakerVariable == null || type.isEmpty() || type == null) {
+        if (fakerVariable == null || type == null) {
             return "";
         }
 
