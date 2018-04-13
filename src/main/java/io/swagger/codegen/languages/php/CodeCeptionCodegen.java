@@ -111,6 +111,8 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
 
             //TODO Think about array and objects.
+            //TODO Think about allOf (operationid = goRandom).
+            //TODO remove if of "goRandom".
             StringBuilder requestBodyJson = new StringBuilder("");
             if (pathItem != null) {
                 Operation postOperation = pathItem.getPost();
@@ -174,22 +176,24 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                                 property$ref = super.openAPI.getComponents().getSchemas().get(property$ref).get$ref();
                                             }
                                             Map<String, Schema> propertiesOfProperty = propertyOpenApiRequestBodySchema.getProperties();
-                                            Set<String> propertiesKeysOfProperty = propertiesOfProperty.keySet();
-                                            int propertyCounter = 0;
-                                            for (String keyOfProperty : propertiesKeysOfProperty) {
-                                                String fakerMethod = CodegenHelper.getFakerMethod(
-                                                        "$this->faker->",
-                                                        propertiesOfProperty.get(keyOfProperty).getType(),
-                                                        propertiesOfProperty.get(keyOfProperty).getFormat()
-                                                );
-                                                requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
+                                            if (!postOperation.getOperationId().equals("goRandom")) {
+                                                Set<String> propertiesKeysOfProperty = propertiesOfProperty.keySet();
+                                                int propertyCounter = 0;
+                                                for (String keyOfProperty : propertiesKeysOfProperty) {
+                                                    String fakerMethod = CodegenHelper.getFakerMethod(
+                                                            "$this->faker->",
+                                                            propertiesOfProperty.get(keyOfProperty).getType(),
+                                                            propertiesOfProperty.get(keyOfProperty).getFormat()
+                                                    );
+                                                    requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
 
-                                                if ((propertyCounter + 1) < propertiesKeysOfProperty.size()) {
-                                                    requestBodyJson.append(",\n\t\t\t\t\t");
+                                                    if ((propertyCounter + 1) < propertiesKeysOfProperty.size()) {
+                                                        requestBodyJson.append(",\n\t\t\t\t\t");
+                                                    }
+                                                    propertyCounter++;
                                                 }
-                                                propertyCounter++;
+                                                requestBodyJson.append("\n\t\t\t\t]");
                                             }
-                                            requestBodyJson.append("\n\t\t\t\t]");
                                         } else {
                                             String fakerMethod = CodegenHelper.getFakerMethod(
                                                     "$this->faker->",
