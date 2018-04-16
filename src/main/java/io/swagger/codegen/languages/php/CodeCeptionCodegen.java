@@ -159,54 +159,59 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                         if ($ref == null || $ref.isEmpty()) {
                             if (openApiRequestBodySchema != null) {
                                 if (openApiRequestBodySchema.getProperties() != null) {
-                                    Map<String, Schema> properties = openApiRequestBodySchema.getProperties();
+                                    Schema schema = openApiRequestBodySchema;
+                                    Map<String, Schema> properties = schema.getProperties();
                                     Set<String> propertiesKeys = properties.keySet();
                                     int counter = 0;
                                     for (String key : propertiesKeys) {
-                                        String type = properties.get(key).getType();
-                                        String format = properties.get(key).getFormat();
-
-                                        if (properties.get(key).get$ref() != null) {
-                                            requestBodyJson.append("'" + key + "' => [\n\t\t\t\t\t");
-                                            Schema propertyOpenApiRequestBodySchema = null;
-                                            String property$ref = properties.get(key).get$ref();
-                                            while (property$ref != null) {
-                                                property$ref = super.getSimpleRef(property$ref);
-                                                propertyOpenApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get(property$ref);
-                                                property$ref = super.openAPI.getComponents().getSchemas().get(property$ref).get$ref();
-                                            }
-                                            Map<String, Schema> propertiesOfProperty = propertyOpenApiRequestBodySchema.getProperties();
-                                            if (!postOperation.getOperationId().equals("goRandom")) {
-                                                Set<String> propertiesKeysOfProperty = propertiesOfProperty.keySet();
-                                                int propertyCounter = 0;
-                                                for (String keyOfProperty : propertiesKeysOfProperty) {
-                                                    String fakerMethod = CodegenHelper.getFakerMethod(
-                                                            "$this->faker->",
-                                                            propertiesOfProperty.get(keyOfProperty).getType(),
-                                                            propertiesOfProperty.get(keyOfProperty).getFormat()
-                                                    );
-                                                    requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
-
-                                                    if ((propertyCounter + 1) < propertiesKeysOfProperty.size()) {
-                                                        requestBodyJson.append(",\n\t\t\t\t\t");
-                                                    }
-                                                    propertyCounter++;
-                                                }
-                                                requestBodyJson.append("\n\t\t\t\t]");
-                                            }
-                                        } else {
+                                        if (properties.get(key).get$ref() == null) {
                                             String fakerMethod = CodegenHelper.getFakerMethod(
                                                     "$this->faker->",
-                                                    type,
-                                                    format
+                                                    properties.get(key).getType(),
+                                                    properties.get(key).getFormat()
                                             );
                                             requestBodyJson.append("'" + key + "' => " + fakerMethod);
                                         }
-
+                                        String property$ref = properties.get(key).get$ref();
+                                        if (property$ref != null) {
+                                            requestBodyJson.append("'" + key + "' => ");
+                                            printProperties(property$ref, key, requestBodyJson, postOperation, false);
+                                        }
+//                                        if (properties.get(key).get$ref() != null) {
+//                                            requestBodyJson.append("'" + key + "' => [\n\t\t\t\t\t");
+//                                            Schema propertyOpenApiRequestBodySchema = null;
+//                                            String property$ref = properties.get(key).get$ref();
+//                                            while (property$ref != null) {
+//                                                property$ref = super.getSimpleRef(property$ref);
+//                                                propertyOpenApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get(property$ref);
+//                                                property$ref = super.openAPI.getComponents().getSchemas().get(property$ref).get$ref();
+//                                            }
+//
+//                                            Map<String, Schema> propertiesOfProperty = propertyOpenApiRequestBodySchema.getProperties();
+//                                            if (!postOperation.getOperationId().equals("goRandom")) {
+//                                                Set<String> propertiesKeysOfProperty = propertiesOfProperty.keySet();
+//                                                int propertyCounter = 0;
+//                                                for (String keyOfProperty : propertiesKeysOfProperty) {
+//                                                    String fakerMethod = CodegenHelper.getFakerMethod(
+//                                                            "$this->faker->",
+//                                                            propertiesOfProperty.get(keyOfProperty).getType(),
+//                                                            propertiesOfProperty.get(keyOfProperty).getFormat()
+//                                                    );
+//                                                    requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
+//
+//                                                    if ((propertyCounter + 1) < propertiesKeysOfProperty.size()) {
+//                                                        requestBodyJson.append(",\n\t\t\t\t\t");
+//                                                    }
+//                                                    propertyCounter++;
+//                                                }
+//                                                requestBodyJson.append("\n\t\t\t\t]");
+//                                            }
+//                                        }
                                         if ((counter + 1) < propertiesKeys.size()) {
                                             requestBodyJson.append(",\n\t\t\t\t");
                                         }
                                         counter++;
+
                                     }
                                 } else {
                                     String fakerMethod = CodegenHelper.getFakerMethod(
@@ -277,5 +282,54 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             operationCounter++;
         }
         return objs;
+    }
+
+    public void printProperties(String property$ref, String key, StringBuilder requestBodyJson, Operation postOperation, Boolean recursive) {
+        if (recursive) {
+            requestBodyJson.append("[\n\t\t\t\t\t\t");
+        } else {
+            requestBodyJson.append("[\n\t\t\t\t\t");
+        }
+
+        Schema propertyOpenApiRequestBodySchema = null;
+        while (property$ref != null) {
+            property$ref = super.getSimpleRef(property$ref);
+            propertyOpenApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get(property$ref);
+            property$ref = super.openAPI.getComponents().getSchemas().get(property$ref).get$ref();
+        }
+
+        Map<String, Schema> propertiesOfProperty = propertyOpenApiRequestBodySchema.getProperties();
+        if (!postOperation.getOperationId().equals("goRandom")) {
+            Set<String> propertiesKeysOfProperty = propertiesOfProperty.keySet();
+            int propertyCounter = 0;
+            for (String keyOfProperty : propertiesKeysOfProperty) {
+                String fakerMethod = CodegenHelper.getFakerMethod(
+                        "$this->faker->",
+                        propertiesOfProperty.get(keyOfProperty).getType(),
+                        propertiesOfProperty.get(keyOfProperty).getFormat()
+                );
+                requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
+
+                if (propertiesOfProperty.get(keyOfProperty).get$ref() != null) {
+                    printProperties(propertiesOfProperty.get(keyOfProperty).get$ref(), keyOfProperty, requestBodyJson, postOperation, true);
+
+                }
+
+                if ((propertyCounter + 1) < propertiesKeysOfProperty.size()) {
+                    if (recursive) {
+                        requestBodyJson.append(",\n\t\t\t\t\t\t");
+                    } else {
+                        requestBodyJson.append(",\n\t\t\t\t\t");
+                    }
+                }
+                propertyCounter++;
+            }
+            if (recursive) {
+                requestBodyJson.append("\n\t\t\t\t\t]");
+            } else {
+                requestBodyJson.append("\n\t\t\t\t]");
+            }
+
+        }
     }
 }
