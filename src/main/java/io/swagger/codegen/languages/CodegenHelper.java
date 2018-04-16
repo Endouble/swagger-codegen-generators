@@ -207,7 +207,7 @@ public class CodegenHelper {
             keysToReplace.get(Arrays.asList(type, format)) == null
                     || keysToReplace.get(Arrays.asList(type, format)).isEmpty()
             ) {
-            return "null";
+            return "";
         }
 
         return keysToReplace.get(Arrays.asList(type, format));

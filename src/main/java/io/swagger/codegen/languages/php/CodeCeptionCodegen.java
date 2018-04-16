@@ -5,9 +5,7 @@ import io.swagger.codegen.languages.CodegenHelper;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
-import io.swagger.v3.oas.models.media.BinarySchema;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 
 import java.io.File;
@@ -17,6 +15,8 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 {
      @SuppressWarnings("hiding")
     protected String apiVersion = "1.0.0";
+    private final String BEGIN_SPACE = "\n\t\t\t\t\t";
+    private final String END_SPACE = "\n\t\t\t\t";
 
 
     /**
@@ -109,10 +109,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 response.httpDescription = CodegenHelper.getHTTPDescription(Integer.parseInt(response.getCode()));
             }
 
-
-            //TODO Think about array and objects.
-            //TODO Think about allOf (operationid = goRandom).
-            //TODO remove if of "goRandom".
+            //TODO Think about allOf and others (operationid = goRandom).
             StringBuilder requestBodyJson = new StringBuilder("");
             if (pathItem != null) {
                 Operation postOperation = pathItem.getPost();
@@ -175,7 +172,8 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                         String property$ref = properties.get(key).get$ref();
                                         if (property$ref != null) {
                                             requestBodyJson.append("'" + key + "' => ");
-                                            printProperties(property$ref, key, requestBodyJson, postOperation, false);
+                                            printProperties(property$ref, key, requestBodyJson, postOperation,
+                                                    false, BEGIN_SPACE, END_SPACE);
                                         }
 //                                        if (properties.get(key).get$ref() != null) {
 //                                            requestBodyJson.append("'" + key + "' => [\n\t\t\t\t\t");
@@ -284,22 +282,37 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
         return objs;
     }
 
-    public void printProperties(String property$ref, String key, StringBuilder requestBodyJson, Operation postOperation, Boolean recursive) {
+    public void printProperties(String property$ref, String key, StringBuilder requestBodyJson, Operation postOperation,
+                                Boolean recursive, String beginSpace, String endSpace) {
         if (recursive) {
-            requestBodyJson.append("[\n\t\t\t\t\t\t");
+            beginSpace = beginSpace + "\t";
+            endSpace = endSpace + "\t";
+            requestBodyJson.append("[" + beginSpace);
         } else {
-            requestBodyJson.append("[\n\t\t\t\t\t");
+            requestBodyJson.append("[" + BEGIN_SPACE);
         }
 
         Schema propertyOpenApiRequestBodySchema = null;
+        Map<String, Schema> propertiesOfProperty = null;
         while (property$ref != null) {
             property$ref = super.getSimpleRef(property$ref);
             propertyOpenApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get(property$ref);
             property$ref = super.openAPI.getComponents().getSchemas().get(property$ref).get$ref();
         }
 
-        Map<String, Schema> propertiesOfProperty = propertyOpenApiRequestBodySchema.getProperties();
-        if (!postOperation.getOperationId().equals("goRandom")) {
+        if (propertyOpenApiRequestBodySchema instanceof ComposedSchema) {
+            propertyOpenApiRequestBodySchema = ((ComposedSchema) propertyOpenApiRequestBodySchema).getAllOf().get(0);
+            if (propertyOpenApiRequestBodySchema.get$ref() != null) {
+                printProperties(propertyOpenApiRequestBodySchema.get$ref(), key,
+                        requestBodyJson, postOperation, false, beginSpace, endSpace);
+            } else {
+                propertiesOfProperty = propertyOpenApiRequestBodySchema.getProperties();
+            }
+        } else {
+            propertiesOfProperty = propertyOpenApiRequestBodySchema.getProperties();
+        }
+
+        if (propertiesOfProperty != null) {
             Set<String> propertiesKeysOfProperty = propertiesOfProperty.keySet();
             int propertyCounter = 0;
             for (String keyOfProperty : propertiesKeysOfProperty) {
@@ -308,28 +321,42 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                         propertiesOfProperty.get(keyOfProperty).getType(),
                         propertiesOfProperty.get(keyOfProperty).getFormat()
                 );
+
                 requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
 
-                if (propertiesOfProperty.get(keyOfProperty).get$ref() != null) {
-                    printProperties(propertiesOfProperty.get(keyOfProperty).get$ref(), keyOfProperty, requestBodyJson, postOperation, true);
+                if (propertiesOfProperty.get(keyOfProperty) instanceof ArraySchema) {
+                    if (((ArraySchema) propertiesOfProperty.get(keyOfProperty)).getItems().get$ref() != null) {
+                        printProperties(((ArraySchema) propertiesOfProperty.get(keyOfProperty)).getItems().get$ref(),
+                                keyOfProperty, requestBodyJson, postOperation, true, beginSpace, endSpace);
+                    } else if (((ArraySchema) propertiesOfProperty.get(keyOfProperty)).getItems().getType() != null) {
+                        fakerMethod = CodegenHelper.getFakerMethod(
+                                "$this->faker->",
+                                ((ArraySchema) propertiesOfProperty.get(keyOfProperty)).getItems().getType(),
+                                ((ArraySchema) propertiesOfProperty.get(keyOfProperty)).getItems().getFormat()
+                        );
+                        requestBodyJson.append(fakerMethod);
+                    }
+                }
 
+                if (propertiesOfProperty.get(keyOfProperty).get$ref() != null) {
+                    printProperties(propertiesOfProperty.get(keyOfProperty).get$ref(), keyOfProperty, requestBodyJson,
+                            postOperation, true, beginSpace, endSpace);
                 }
 
                 if ((propertyCounter + 1) < propertiesKeysOfProperty.size()) {
                     if (recursive) {
-                        requestBodyJson.append(",\n\t\t\t\t\t\t");
+                        requestBodyJson.append("," + beginSpace);
                     } else {
-                        requestBodyJson.append(",\n\t\t\t\t\t");
+                        requestBodyJson.append("," + BEGIN_SPACE);
                     }
                 }
                 propertyCounter++;
             }
             if (recursive) {
-                requestBodyJson.append("\n\t\t\t\t\t]");
+                requestBodyJson.append(endSpace + "]");
             } else {
-                requestBodyJson.append("\n\t\t\t\t]");
+                requestBodyJson.append(END_SPACE + "]");
             }
-
         }
     }
 }
