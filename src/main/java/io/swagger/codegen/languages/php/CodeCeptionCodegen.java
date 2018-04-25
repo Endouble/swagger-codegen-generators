@@ -1,5 +1,6 @@
 package io.swagger.codegen.languages.php;
 
+import com.github.jknack.handlebars.EscapingStrategy;
 import io.swagger.codegen.*;
 import io.swagger.codegen.languages.CodegenHelper;
 import io.swagger.v3.oas.models.Operation;
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.File;
 import java.util.*;
@@ -17,6 +19,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
     protected String apiVersion = "1.0.0";
     private final String BEGIN_SPACE = "\n\t\t\t\t\t";
     private final String END_SPACE = "\n\t\t\t\t";
+    private final String[] DIRECTORIES = {"/" + CODECEPTION_DIRECTORY + "/_data", "/" + CODECEPTION_DIRECTORY + "/_output"};
 
 
     /**
@@ -72,12 +75,32 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
         apiDocTemplateFiles.clear();
         modelDocTemplateFiles.clear();
 
-        supportingFiles.add(new SupportingFile("testcase.handlebars", packagePath + File.separator +
-                srcBasePath + File.separator + "Acceptance", "TestCase.php"));
+        supportingFiles.add(new SupportingFile("composer.mustache", packagePath + File.separator +
+                srcBasePath, "composer.json"));
+        supportingFiles.add(new SupportingFile("README.mustache", packagePath + File.separator +
+                srcBasePath, "README.md"));
+        supportingFiles.add(new SupportingFile("codeception.mustache", packagePath + File.separator +
+                srcBasePath + File.separator, "codeception.yml"));
+        supportingFiles.add(new SupportingFile("testcase.mustache", packagePath + File.separator +
+                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "acceptance", "TestCase.php"));
+        supportingFiles.add(new SupportingFile("acceptance.suite.mustache", packagePath + File.separator +
+                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator, "acceptance.suite.yml"));
+        supportingFiles.add(new SupportingFile("acceptanceTester.mustache", packagePath + File.separator +
+                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support", "AcceptanceTester.php"));
+        supportingFiles.add(new SupportingFile("acceptanceHelper.mustache", packagePath + File.separator +
+                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" + File.separator + "Helper" + File.separator, "Acceptance.php"));
+        supportingFiles.add(new SupportingFile("acceptanceTesterActions.mustache", packagePath + File.separator +
+                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" + File.separator + "_generated" + File.separator, "AcceptanceTesterActions.php"));
     }
 
     @Override
     public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
+        for (String directory : DIRECTORIES) {
+            if(!new File(this.outputFolder + directory).isDirectory()) {
+                new File(this.outputFolder + directory).mkdirs();
+            }
+        }
+
         objs = super.postProcessOperations(objs);
         Map<String, Object> operations = (Map<String, Object>) objs.get("operations");
         List<CodegenOperation> ops = (List<CodegenOperation>) operations.get("operation");
@@ -100,9 +123,18 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                     path = path.replace("{" + pathParam.baseName + "}", "$" + pathParam.baseName);
                 }
             }
+            if (operation.queryParams.size() > 0) {
+                for (int i = 0; i < operation.queryParams.size(); i++) {
+                    if(i == 0) {
+                        path += "?" + operation.queryParams.get(i).baseName + "=$" + operation.queryParams.get(i).baseName;
+                    } else {
+                        path += "&" + operation.queryParams.get(i).baseName + "=$" + operation.queryParams.get(i).baseName;
+                    }
+                }
+            }
 
             CodegenOperation updateOperation = operation;
-            updateOperation.resolvedPath = path;
+            updateOperation.resolvedPath = StringEscapeUtils.unescapeHtml4(path);
 
             List<CodegenResponse> responses = updateOperation.responses;
             for (CodegenResponse response : responses) {
@@ -184,14 +216,14 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                     }
                                 } else if (openApiRequestBodySchema instanceof ArraySchema){
                                     printArrayProperties(openApiRequestBodySchema, "", requestBodyJson,
-                                            postOperation, true, BEGIN_SPACE, END_SPACE);
+                                            postOperation, false, BEGIN_SPACE, END_SPACE);
                                 } else {
                                     String fakerMethod = CodegenHelper.getFakerMethod(
                                             "$this->faker->",
                                             openApiRequestBodySchema.getType(),
                                             openApiRequestBodySchema.getFormat()
                                     );
-                                    requestBodyJson.append("'" + openApiRequestBodySchema.getName() + "' => " + fakerMethod);
+                                    requestBodyJson.append(fakerMethod);
                                 }
                             }
                         }

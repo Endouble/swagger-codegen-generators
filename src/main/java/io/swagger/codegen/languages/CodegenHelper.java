@@ -185,7 +185,7 @@ public class CodegenHelper {
         HashMap<List<String>,String> keysToReplace = new HashMap<List<String>,String>();
         keysToReplace.put(Arrays.asList("string", ""), fakerVariable + "text()");
         keysToReplace.put(Arrays.asList("string", "date"), fakerVariable + "date()");
-        keysToReplace.put(Arrays.asList("string", "date-time"), fakerVariable + "dateTime()");
+        keysToReplace.put(Arrays.asList("string", "date-time"), fakerVariable + "iso8601()");
         keysToReplace.put(Arrays.asList("string", "password"), fakerVariable + "password()");
         keysToReplace.put(Arrays.asList("string", "uuid"), fakerVariable + "uuid");
         keysToReplace.put(Arrays.asList("string", "uri"), fakerVariable + "url");
@@ -207,7 +207,14 @@ public class CodegenHelper {
             keysToReplace.get(Arrays.asList(type, format)) == null
                     || keysToReplace.get(Arrays.asList(type, format)).isEmpty()
             ) {
-            return "";
+            if (
+                keysToReplace.get(Arrays.asList(type, "")) == null
+                        || keysToReplace.get(Arrays.asList(type, "")).isEmpty()
+                ) {
+                return "";
+            } else {
+                return keysToReplace.get(Arrays.asList(type, ""));
+            }
         }
 
         return keysToReplace.get(Arrays.asList(type, format));

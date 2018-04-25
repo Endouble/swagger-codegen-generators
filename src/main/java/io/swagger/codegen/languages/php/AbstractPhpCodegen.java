@@ -37,6 +37,7 @@ public abstract class AbstractPhpCodegen extends DefaultCodegenConfig implements
     public static final String VARIABLE_NAMING_CONVENTION = "variableNamingConvention";
     public static final String PACKAGE_PATH = "packagePath";
     public static final String SRC_BASE_PATH = "srcBasePath";
+    public final String CODECEPTION_DIRECTORY = "tests";
     // composerVendorName/composerProjectName has be replaced by gitUserId/gitRepoId. prepare to remove these.
     // public static final String COMPOSER_VENDOR_NAME = "composerVendorName";
     // public static final String COMPOSER_PROJECT_NAME = "composerProjectName";
@@ -49,7 +50,7 @@ public abstract class AbstractPhpCodegen extends DefaultCodegenConfig implements
     protected String testBasePath = "test";
     protected String docsBasePath = "docs";
     protected String apiDirName = "Api";
-    protected String acceptanceDirName = "Acceptance";
+    protected String acceptanceDirName = CODECEPTION_DIRECTORY + File.separator + "acceptance";
     protected String modelDirName = "Model";
     protected String variableNamingConvention= "snake_case";
     protected String apiDocPath = docsBasePath + File.separator + apiDirName;
