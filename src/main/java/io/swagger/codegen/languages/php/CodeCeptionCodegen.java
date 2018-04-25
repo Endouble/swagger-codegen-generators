@@ -130,6 +130,18 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                     } else {
                         path += "&" + operation.queryParams.get(i).baseName + "=$" + operation.queryParams.get(i).baseName;
                     }
+
+                    if (operation.getQueryParams().get(i).getItems() != null) {
+                        if (operation.getQueryParams().get(i).getItems().get_enum() != null) {
+                            List<String> enumValues = operation.getQueryParams().get(i).getItems().get_enum();
+                            List<String> enumNewValues = new ArrayList();
+                            for (String enumValue : enumValues) {
+                                String newEnumValue = "\"" + enumValue + "\"";
+                                enumNewValues.add(newEnumValue);
+                            }
+                            operation.getQueryParams().get(i).getItems().set_enum(enumNewValues);
+                        }
+                    }
                 }
             }
 

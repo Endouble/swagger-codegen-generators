@@ -41,7 +41,8 @@ class {{classname}}
         {{#if pathParams}}{{#pathParams}}${{baseName}} = ''; //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
         {{/pathParams}}
         {{/if ~}}
-        {{#if queryParams}}{{#queryParams}}${{baseName}} = ''; //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
+        {{#if queryParams}}{{#queryParams}}{{#if items}}{{#items}}{{#if _enum}}${{baseName}} = {{{_enum}}};
+        ${{baseName}} = ${{baseName}}[0];{{else}}{{#queryParams}}${{baseName}} = [''];{{/queryParams}}{{/if}}{{/items}}{{else}}${{baseName}} = '';{{/if}} //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
         {{/queryParams}}
         {{/if ~}}
 
