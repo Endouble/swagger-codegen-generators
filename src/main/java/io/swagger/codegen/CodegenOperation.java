@@ -20,7 +20,7 @@ public class CodegenOperation implements VendorExtendable {
     public boolean returnTypeIsPrimitive, returnSimpleType, subresourceOperation;
     public String path, resolvedPath, operationId, returnType, httpMethod, returnBaseType,
             returnContainer, summary, unescapedNotes, notes, baseName, defaultResponse, codeCeptionResponse,
-            codeCeptionRequestBody;
+            codeCeptionRequestBody, contentType;
     public Discriminator discriminator;
     public List<Map<String, String>> consumes, produces, prioritizedContentTypes;
     public CodegenParameter bodyParam;
@@ -367,6 +367,8 @@ public class CodegenOperation implements VendorExtendable {
     public String getCodeCeptionRequestBody() {
         return codeCeptionRequestBody;
     }
+
+    public String getContentType() { return contentType; }
 
     public Discriminator getDiscriminator() {
         return discriminator;

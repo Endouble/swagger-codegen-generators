@@ -42,12 +42,16 @@ class {{classname}}
         {{/pathParams}}
         {{/if ~}}
         {{#if queryParams}}{{#queryParams}}{{#if items}}{{#items}}{{#if _enum}}${{baseName}} = {{{_enum}}};
-        ${{baseName}} = ${{baseName}}[0];{{else}}{{#queryParams}}${{baseName}} = [''];{{/queryParams}}{{/if}}{{/items}}{{else}}${{baseName}} = '';{{/if}} //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
+        ${{baseName}} = ${{baseName}}[0];{{else}}{{#queryParams}}${{baseName}} = '';{{/queryParams}}{{/if}}{{/items}}{{else}}${{baseName}} = '';{{/if}} //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
         {{/queryParams}}
         {{/if ~}}
 
-        $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->send{{httpMethod}}("{{{resolvedPath}}}"{{#ifEquals httpMethod 'POST'}}, json_encode(
+        $I->haveHttpHeader('Content-Type', '{{contentType}}');
+        $I->send{{httpMethod}}("{{{resolvedPath}}}"{{#ifEquals httpMethod 'PUT'}}, json_encode(
+            [
+                {{{codeCeptionRequestBody}}}
+            ]
+        ){{/ifEquals ~}}{{#ifEquals httpMethod 'POST'}}, json_encode(
             [
                 {{{codeCeptionRequestBody}}}
             ]

@@ -126,10 +126,11 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             if (operation.queryParams.size() > 0) {
                 for (int i = 0; i < operation.queryParams.size(); i++) {
                     if(i == 0) {
-                        path += "?" + operation.queryParams.get(i).baseName + "=$" + operation.queryParams.get(i).baseName;
+                        path += "?";
                     } else {
-                        path += "&" + operation.queryParams.get(i).baseName + "=$" + operation.queryParams.get(i).baseName;
+                        path += "&";
                     }
+                    path += operation.queryParams.get(i).baseName + "=$" + operation.queryParams.get(i).baseName;;
 
                     if (operation.getQueryParams().get(i).getItems() != null) {
                         if (operation.getQueryParams().get(i).getItems().get_enum() != null) {
@@ -155,8 +156,14 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
             StringBuilder requestBodyJson = new StringBuilder("");
             if (pathItem != null) {
-                Operation postOperation = pathItem.getPost();
+                Operation postOperation = pathItem.getPut();
+                if (operation.httpMethod.equals("POST")) {
+                    postOperation = pathItem.getPost();
+                }
                 if (postOperation != null) {
+                    if (postOperation.getRequestBody().getContent() != null) {
+                        updateOperation.contentType = postOperation.getRequestBody().getContent().keySet().iterator().next();
+                    }
                     if (postOperation.getOperationId().equals(operation.getOperationId())) {
                         RequestBody requestBody = postOperation.getRequestBody();
                         String $ref = "";
@@ -210,7 +217,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                                     false, BEGIN_SPACE, END_SPACE);
                                         } else if (properties.get(key) instanceof ArraySchema) {
                                             printArrayProperties(properties.get(key), key, requestBodyJson,
-                                                    postOperation, false, BEGIN_SPACE, END_SPACE);
+                                                    postOperation, false, BEGIN_SPACE, END_SPACE, true);
                                         } else {
                                             String fakerMethod = CodegenHelper.getFakerMethod(
                                                     "$this->faker->",
@@ -228,7 +235,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                     }
                                 } else if (openApiRequestBodySchema instanceof ArraySchema){
                                     printArrayProperties(openApiRequestBodySchema, "", requestBodyJson,
-                                            postOperation, false, BEGIN_SPACE, END_SPACE);
+                                            postOperation, false, BEGIN_SPACE, END_SPACE, false);
                                 } else {
                                     String fakerMethod = CodegenHelper.getFakerMethod(
                                             "$this->faker->",
@@ -293,6 +300,9 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 }
             //}
             updateOperation.codeCeptionResponse = responseJson.toString();
+            if (updateOperation.contentType == null) {
+                updateOperation.contentType = "application/json";
+            }
 
             ops.set(operationCounter, updateOperation);
             operationCounter++;
@@ -344,7 +354,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
                 if (propertiesOfProperty.get(keyOfProperty) instanceof ArraySchema) {
                     printArrayProperties(propertiesOfProperty.get(keyOfProperty), "", requestBodyJson,
-                            postOperation, true, beginSpace, endSpace);
+                            postOperation, true, beginSpace, endSpace, false);
                 }
 
                 if (propertiesOfProperty.get(keyOfProperty).get$ref() != null) {
@@ -371,7 +381,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
     }
 
     public void printArrayProperties(Schema property, String key, StringBuilder requestBodyJson, Operation postOperation,
-                                     Boolean recursive, String beginSpace, String endSpace) {
+                                     Boolean recursive, String beginSpace, String endSpace, Boolean addArray) {
         if (((ArraySchema) property).getItems().getType() != null) {
             String fakerMethod = CodegenHelper.getFakerMethod(
                     "$this->faker->",
@@ -381,14 +391,20 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             if (!key.isEmpty()) {
                 requestBodyJson.append("'" + key + "' => ");
             }
-            requestBodyJson.append("[" + fakerMethod + "]");
+            requestBodyJson.append("array(" + fakerMethod + ")");
         } else if (((ArraySchema) property).getItems().get$ref() != null) {
             if (!key.isEmpty()) {
                 requestBodyJson.append("'" + key + "' => ");
             }
+            if (addArray) {
+                requestBodyJson.append("array(");
+            }
             printProperties(((ArraySchema) property).getItems().get$ref(),
                     key, requestBodyJson, postOperation, recursive, beginSpace,
                     endSpace);
+            if (addArray) {
+                requestBodyJson.append(")");
+            }
         }
 
     }
