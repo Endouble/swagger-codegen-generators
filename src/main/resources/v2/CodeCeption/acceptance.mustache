@@ -42,7 +42,7 @@ class {{classname}}
         {{/pathParams}}
         {{/if ~}}
         {{#if queryParams}}{{#queryParams}}{{#if items}}{{#items}}{{#if _enum}}${{baseName}} = {{{_enum}}};
-        ${{baseName}} = ${{baseName}}[0];{{else}}{{#queryParams}}${{baseName}} = '';{{/queryParams}}{{/if}}{{/items}}{{else}}${{baseName}} = '';{{/if}} //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
+        ${{baseName}} = ${{baseName}}[0];{{else}}{{#queryParams}}${{{baseName}}} = '';{{/queryParams}}{{/if}}{{/items}}{{else}}${{{baseName}}} = '';{{/if}} //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
         {{/queryParams}}
         {{/if ~}}
 
@@ -56,8 +56,9 @@ class {{classname}}
                 {{{codeCeptionRequestBody}}}
             ]
         ){{/ifEquals ~}});
-        $I->seeResponseCodeIs(HttpCode::{{#responses}}{{#@first}}{{httpDescription}}{{/@first}}{{/responses}});{{#produces}}{{#ifEquals mediaType 'application/json'}}
-        $I->seeResponseIsJson();{{/ifEquals}}{{/produces}}
+        $I->seeResponseCodeIs(HttpCode::{{#responses}}{{#@first}}{{httpDescription}}{{/@first}}{{/responses}});{{#produces}}{{#@first}}{{#ifEquals mediaType 'application/json'}}
+        $I->seeResponseIsJson();{{/ifEquals}}{{#ifEquals mediaType 'application/xml'}}
+        $I->seeResponseIsXml();{{/ifEquals}}{{/@first}}{{/produces}}
     {{#codeCeptionResponse}}    $I->seeResponseMatchesJsonType(
             [
                 {{{codeCeptionResponse}}}

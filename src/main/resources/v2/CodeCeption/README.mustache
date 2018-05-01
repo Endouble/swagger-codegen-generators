@@ -26,7 +26,7 @@ CURL enabled
 ### Composer
 
 1. Run `composer install`
-2. Change parameter values in files located at `tests\api\`
+2. Change parameter values in files located at `tests\acceptance\`
 
 ## Tests & Getting Started
 
@@ -48,12 +48,12 @@ All URIs are relative to *{{basePath}}*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}*{{classname}}* | [**{{operationId}}**]({{apiDocPath}}/{{classname}}.md#{{operationIdLowerCase}}) | **{{httpMethod}}** {{path}} | {{#summary}}{{summary}}{{/summary}}
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}*{{classname}}* | [**{{operationId}}**] | **{{httpMethod}}** {{path}} | {{#summary}}{{summary}}{{/summary}}
 {{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
 
 ## Documentation For Models
 
-{{#models}}{{#model}} - [{{{classname}}}]({{modelDocPath}}/{{{classname}}}.md)
+{{#models}}{{#model}} - [{{{classname}}}]
 {{/model}}{{/models}}
 
 ## Documentation For Authorization
