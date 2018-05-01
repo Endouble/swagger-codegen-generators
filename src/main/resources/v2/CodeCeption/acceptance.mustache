@@ -13,20 +13,8 @@ use Faker\Generator;
  * Acceptance tests for the {{classVarName}} endpoint.
  *
  */
-class {{classname}}
+class {{classname}} extends TestCase
 {
-    /**
-     * @var Generator
-     */
-    protected $faker;
-
-    /**
-     * {{classname}} constructor.
-     */
-    public function __construct()
-    {
-        $this->faker = Factory::create();
-    }
     {{#operation}}
     /**
      * Operation {{{operationId}}}
