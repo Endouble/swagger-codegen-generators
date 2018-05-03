@@ -192,7 +192,13 @@ public class CodegenHelper {
         keysToReplace.put(Arrays.asList("string", "email"), fakerVariable + "email");
         keysToReplace.put(Arrays.asList("string", "ipv4"), fakerVariable + "ipv4");
         keysToReplace.put(Arrays.asList("string", "ipv6"), fakerVariable + "ipv6");
-        keysToReplace.put(Arrays.asList("string", "binary"), fakerVariable + "text()");
+        keysToReplace.put(Arrays.asList("string", "binary"), "'file' => [\n" +
+                "                  'name' => 'image.png',\n" +
+                "                  'tmp_name' => codecept_data_dir('image.png'),\n" +
+                "                  'size' => filesize(codecept_data_dir('image.png')),\n" +
+                "                  'type' => 'image/png',\n" +
+                "                  'error' => 0,\n" +
+                "                ]");
         keysToReplace.put(Arrays.asList("integer", ""), fakerVariable + "randomNumber()");
         keysToReplace.put(Arrays.asList("integer", "int32"),
                 fakerVariable + "numberBetween(" + Integer.MIN_VALUE + ", " + Integer.MAX_VALUE + ")");

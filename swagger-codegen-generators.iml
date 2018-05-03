@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="ExternalSystem" externalSystem="Maven" />
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
@@ -7,12 +8,14 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: io.swagger:swagger-codegen:3.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-models:2.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger:swagger-codegen:3.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-models:2.0.0" level="project" />
     <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser:2.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser-v2-converter:2.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-parser:1.0.35-SNAPSHOT" level="project" />
@@ -46,9 +49,6 @@
     <orderEntry type="library" name="Maven: org.antlr:antlr4-runtime:4.5.1-1" level="project" />
     <orderEntry type="library" name="Maven: org.mozilla:rhino:1.7R4" level="project" />
     <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-core:2.0.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.9.4" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.9.4" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.9.4" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4" level="project" />
     <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-annotations:2.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: javax.validation:validation-api:1.1.0.Final" level="project" />
@@ -82,5 +82,9 @@
     <orderEntry type="library" scope="TEST" name="Maven: net.bytebuddy:byte-buddy:1.6.14" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: net.bytebuddy:byte-buddy-agent:1.6.14" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.objenesis:objenesis:2.5" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.9.2" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.9.2" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.9.2" level="project" />
+    <orderEntry type="library" name="Maven: org.json:json:20180130" level="project" />
   </component>
 </module>

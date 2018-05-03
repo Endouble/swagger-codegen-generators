@@ -9,6 +9,7 @@ import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.*;
@@ -91,6 +92,8 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" + File.separator + "Helper" + File.separator, "Acceptance.php"));
         supportingFiles.add(new SupportingFile("acceptanceTesterActions.mustache", packagePath + File.separator +
                 srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" + File.separator + "_generated" + File.separator, "AcceptanceTesterActions.php"));
+        supportingFiles.add(new SupportingFile("image.png", packagePath + File.separator +
+                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_data", "image.png"));
     }
 
     @Override
@@ -104,6 +107,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
         objs = super.postProcessOperations(objs);
         Map<String, Object> operations = (Map<String, Object>) objs.get("operations");
         List<CodegenOperation> ops = (List<CodegenOperation>) operations.get("operation");
+        ops = sortByHttpMethod(ops);
 
         int operationCounter = 0;
         Paths paths = this.openAPI.getPaths();
@@ -120,6 +124,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             PathItem pathItem = paths.get(path);
             if (operation.pathParams.size() > 0) {
                 for (CodegenParameter pathParam : operation.pathParams) {
+                    setParamExample(pathParam);
                     path = path.replace("{" + pathParam.baseName + "}", "$" + pathParam.baseName);
                 }
             }
@@ -130,6 +135,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                     } else {
                         path += "&";
                     }
+                    setParamExample(operation.queryParams.get(i));
                     path += operation.queryParams.get(i).baseName + "=$" + operation.queryParams.get(i).baseName;;
 
                     if (operation.getQueryParams().get(i).getItems() != null) {
@@ -218,6 +224,8 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                         } else if (properties.get(key) instanceof ArraySchema) {
                                             printArrayProperties(properties.get(key), key, requestBodyJson,
                                                     postOperation, false, BEGIN_SPACE, END_SPACE, true);
+                                        } else if (properties.get(key).getExample() != null){
+                                            requestBodyJson.append("'" + key + "' => '" + properties.get(key).getExample() + "'");
                                         } else {
                                             String fakerMethod = CodegenHelper.getFakerMethod(
                                                     "$this->faker->",
@@ -307,6 +315,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             ops.set(operationCounter, updateOperation);
             operationCounter++;
         }
+        operations.put("operation", sortByHttpMethod(ops));
         return objs;
     }
 
@@ -344,13 +353,17 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             Set<String> propertiesKeysOfProperty = propertiesOfProperty.keySet();
             int propertyCounter = 0;
             for (String keyOfProperty : propertiesKeysOfProperty) {
-                String fakerMethod = CodegenHelper.getFakerMethod(
-                        "$this->faker->",
-                        propertiesOfProperty.get(keyOfProperty).getType(),
-                        propertiesOfProperty.get(keyOfProperty).getFormat()
-                );
+                if (propertiesOfProperty.get(keyOfProperty).getExample() != null) {
+                    requestBodyJson.append("'" + keyOfProperty + "' => '" + propertiesOfProperty.get(keyOfProperty).getExample() + "'");
+                } else {
+                    String fakerMethod = CodegenHelper.getFakerMethod(
+                            "$this->faker->",
+                            propertiesOfProperty.get(keyOfProperty).getType(),
+                            propertiesOfProperty.get(keyOfProperty).getFormat()
+                    );
 
-                requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
+                    requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
+                }
 
                 if (propertiesOfProperty.get(keyOfProperty) instanceof ArraySchema) {
                     printArrayProperties(propertiesOfProperty.get(keyOfProperty), "", requestBodyJson,
@@ -407,5 +420,42 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             }
         }
 
+    }
+
+    public List<CodegenOperation> sortByHttpMethod(List<CodegenOperation> ops){
+        final String[] HTTP_METHODS = {"POST", "GET", "PUT", "DELETE"};
+        List<CodegenOperation> opsSorted = new ArrayList<CodegenOperation>();
+        List<CodegenOperation> operationsToDelete = new ArrayList<CodegenOperation>();
+
+        for (int i = 0; i < HTTP_METHODS.length; i++) {
+            for (int j = 0; j < ops.size(); j++) {
+                if (ops.get(j).httpMethod.equals(HTTP_METHODS[i])) {
+                    opsSorted.add(ops.get(j));
+                    operationsToDelete.add(ops.get(j));
+                }
+            }
+
+            for (CodegenOperation operation : operationsToDelete) {
+                ops.remove(operation);
+            }
+        }
+        return opsSorted;
+    }
+
+    public CodegenParameter setParamExample(CodegenParameter param){
+        JSONObject paramJsonObject = new JSONObject(param.getJsonSchema());
+
+        if (paramJsonObject.has("example")) {
+            param.example = paramJsonObject.get("example").toString();
+        } else {
+            if (paramJsonObject.has("schema")) {
+                paramJsonObject = new JSONObject(paramJsonObject.get("schema").toString());
+                if (paramJsonObject.has("example")) {
+                    param.example = paramJsonObject.get("example").toString();
+                }
+            }
+        }
+
+        return param;
     }
 }

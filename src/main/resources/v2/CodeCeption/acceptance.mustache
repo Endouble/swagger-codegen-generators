@@ -26,11 +26,11 @@ class {{classname}} extends TestCase
      */
     public function {{operationId}}(AcceptanceTester $I)
     {
-        {{#if pathParams}}{{#pathParams}}${{baseName}} = ''; //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
+        {{#if pathParams}}{{#pathParams}}${{baseName}} = {{#if example}}'{{example}}'{{else}}''{{/if}}; //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
         {{/pathParams}}
         {{/if ~}}
         {{#if queryParams}}{{#queryParams}}{{#if items}}{{#items}}{{#if _enum}}${{baseName}} = {{{_enum}}};
-        ${{baseName}} = ${{baseName}}[0];{{else}}{{#queryParams}}${{{baseName}}} = '';{{/queryParams}}{{/if}}{{/items}}{{else}}${{{baseName}}} = '';{{/if}} //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
+        ${{baseName}} = ${{baseName}}[0];{{else}}{{#queryParams}}${{{baseName}}} = {{#if example}}'{{example}}'{{else}}''{{/if}};{{/queryParams}}{{/if}}{{/items}}{{else}}${{{baseName}}} = {{#if example}}'{{example}}'{{else}}''{{/if}};{{/if}} //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
         {{/queryParams}}
         {{/if ~}}
 
