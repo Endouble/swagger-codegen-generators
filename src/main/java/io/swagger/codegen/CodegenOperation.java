@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 public class CodegenOperation implements VendorExtendable {
     public final List<CodegenProperty> responseHeaders = new ArrayList<CodegenProperty>();
-    public boolean returnTypeIsPrimitive, returnSimpleType, subresourceOperation;
+    public boolean returnTypeIsPrimitive, returnSimpleType, subresourceOperation, returnJsonEncoded;
     public String path, resolvedPath, operationId, returnType, httpMethod, returnBaseType,
             returnContainer, summary, unescapedNotes, notes, baseName, defaultResponse, codeCeptionResponse,
             codeCeptionRequestBody, contentType;
@@ -421,6 +421,8 @@ public class CodegenOperation implements VendorExtendable {
     public boolean getReturnSimpleType() {
         return returnSimpleType;
     }
+
+    public boolean getReturnJsonEncoded() { return returnJsonEncoded; }
 
     public boolean getSubresourceOperation() {
         return subresourceOperation;

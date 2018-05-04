@@ -21,6 +21,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
     private final String BEGIN_SPACE = "\n\t\t\t\t\t";
     private final String END_SPACE = "\n\t\t\t\t";
     private final String[] DIRECTORIES = {"/" + CODECEPTION_DIRECTORY + "/_data", "/" + CODECEPTION_DIRECTORY + "/_output"};
+    private final String REMOVE_CONTENT_TYPE = "RemoveContentType";
 
 
     /**
@@ -169,6 +170,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 if (postOperation != null) {
                     if (postOperation.getRequestBody().getContent() != null) {
                         updateOperation.contentType = postOperation.getRequestBody().getContent().keySet().iterator().next();
+                        updateOperation.returnJsonEncoded = true;
                     }
                     if (postOperation.getOperationId().equals(operation.getOperationId())) {
                         RequestBody requestBody = postOperation.getRequestBody();
@@ -210,6 +212,11 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
                         if ($ref == null || $ref.isEmpty()) {
                             if (openApiRequestBodySchema != null) {
+                                if(openApiRequestBodySchema.getFormat() != null) {
+                                    if(openApiRequestBodySchema.getFormat().equals("binary") || openApiRequestBodySchema.getFormat().equals("byte")) {
+                                        updateOperation.contentType = REMOVE_CONTENT_TYPE;
+                                    }
+                                }
                                 if (openApiRequestBodySchema.getProperties() != null) {
                                     Schema schema = openApiRequestBodySchema;
                                     Map<String, Schema> properties = schema.getProperties();
@@ -310,8 +317,12 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             updateOperation.codeCeptionResponse = responseJson.toString();
             if (updateOperation.contentType == null) {
                 updateOperation.contentType = "application/json";
+                updateOperation.returnJsonEncoded = true;
             }
-
+            if (updateOperation.contentType == REMOVE_CONTENT_TYPE) {
+                updateOperation.contentType = null;
+                updateOperation.returnJsonEncoded = false;
+            }
             ops.set(operationCounter, updateOperation);
             operationCounter++;
         }
