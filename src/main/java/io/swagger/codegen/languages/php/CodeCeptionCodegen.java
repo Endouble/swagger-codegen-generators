@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONObject;
 
@@ -99,6 +100,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
     @Override
     public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
+        List<CodegenOperation> extraResponseOperations = new ArrayList<CodegenOperation>();
         for (String directory : DIRECTORIES) {
             if(!new File(this.outputFolder + directory).isDirectory()) {
                 new File(this.outputFolder + directory).mkdirs();
@@ -121,6 +123,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 //        }
 
         for (CodegenOperation operation : ops) {
+            ArrayList<Integer> extraResponses = new ArrayList<>();
             String path = operation.path;
             PathItem pathItem = paths.get(path);
             if (operation.pathParams.size() > 0) {
@@ -267,65 +270,84 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             updateOperation.codeCeptionRequestBody = requestBodyJson.toString();
 
             StringBuilder responseJson = new StringBuilder("");
-            //for (CodegenResponse response : responses) {
-                Schema responseSchema = (Schema) responses.get(0).getSchema();
-                if (responseSchema != null) {
-                    String $ref = responseSchema.get$ref();
-                    if ($ref != null) {
-                        $ref = super.getSimpleRef($ref);
-                        Schema openApiResponseSchema = null;
-                        if (super.openAPI.getComponents().getResponses() != null) {
-                            if (super.openAPI.getComponents().getResponses().get($ref) != null) {
-                                openApiResponseSchema = super.openAPI.getComponents().getResponses().get($ref).
-                                        getContent().get("application/json").getSchema();
+            for (int i = 0; i < responses.size(); i++) {
+                if (i == 0) {
+                    Schema responseSchema = (Schema) responses.get(0).getSchema();
+                    if (responseSchema != null) {
+                        String $ref = responseSchema.get$ref();
+                        if ($ref != null) {
+                            $ref = super.getSimpleRef($ref);
+                            Schema openApiResponseSchema = null;
+                            if (super.openAPI.getComponents().getResponses() != null) {
+                                if (super.openAPI.getComponents().getResponses().get($ref) != null) {
+                                    openApiResponseSchema = super.openAPI.getComponents().getResponses().get($ref).
+                                            getContent().get("application/json").getSchema();
+                                } else {
+                                    openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
+                                }
                             } else {
                                 openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
                             }
-                        } else {
-                            openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
-                        }
 
-                        if (openApiResponseSchema != null) {
-                            Map<String, Schema> properties = openApiResponseSchema.getProperties();
-                            Set<String> propertiesKeys = properties.keySet();
-                            int counter = 0;
-                            for (String key : propertiesKeys) {
-                                HashMap<String, String> keysToReplace = new HashMap<String, String>();
-                                keysToReplace.put("number", "float");
-                                keysToReplace.put("object", "array");
+                            if (openApiResponseSchema != null) {
+                                Map<String, Schema> properties = openApiResponseSchema.getProperties();
+                                Set<String> propertiesKeys = properties.keySet();
+                                int counter = 0;
+                                for (String key : propertiesKeys) {
+                                    HashMap<String, String> keysToReplace = new HashMap<String, String>();
+                                    keysToReplace.put("number", "float");
+                                    keysToReplace.put("object", "array");
 
-                                for (Map.Entry<String, String> entry : keysToReplace.entrySet()) {
-                                    if (properties.get(key).getType() != null) {
-                                        if (properties.get(key).getType().toString().equals(entry.getKey())) {
-                                            properties.get(key).type(entry.getValue());
+                                    for (Map.Entry<String, String> entry : keysToReplace.entrySet()) {
+                                        if (properties.get(key).getType() != null) {
+                                            if (properties.get(key).getType().toString().equals(entry.getKey())) {
+                                                properties.get(key).type(entry.getValue());
+                                            }
+                                        } else {
+                                            properties.get(key).type("array");
                                         }
-                                    } else {
-                                        properties.get(key).type("array");
                                     }
-                                }
-                                responseJson.append("'" + key + "' => '" + properties.get(key).getType() + "'");
+                                    responseJson.append("'" + key + "' => '" + properties.get(key).getType() + "'");
 
-                                if ((counter + 1) < propertiesKeys.size()) {
-                                    responseJson.append(",\n\t\t\t\t");
+                                    if ((counter + 1) < propertiesKeys.size()) {
+                                        responseJson.append(",\n\t\t\t\t");
+                                    }
+                                    counter++;
                                 }
-                                counter++;
                             }
                         }
                     }
+                } else {
+                    extraResponses.add(Integer.parseInt(responses.get(i).getCode()));
                 }
-            //}
+            }
             updateOperation.codeCeptionResponse = responseJson.toString();
             if (updateOperation.contentType == null) {
                 updateOperation.contentType = "application/json";
                 updateOperation.returnJsonEncoded = true;
             }
-            if (updateOperation.contentType == REMOVE_CONTENT_TYPE) {
+            if (updateOperation.contentType.equals(REMOVE_CONTENT_TYPE)) {
                 updateOperation.contentType = null;
                 updateOperation.returnJsonEncoded = false;
             }
             ops.set(operationCounter, updateOperation);
+
+            for (Integer extraResponse : extraResponses) {
+                CodegenOperation extraOperation = null;
+                try {
+                    extraOperation = (CodegenOperation)updateOperation.clone();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+                extraOperation.operationId = extraResponse + extraOperation.operationId;
+                extraResponseOperations.add(extraOperation);
+            }
+
             operationCounter++;
         }
+
+        addOperationForExtraResponse(ops, extraResponseOperations);
+
         operations.put("operation", sortByHttpMethod(ops));
         return objs;
     }
@@ -433,6 +455,40 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
     }
 
+    public void addOperationForExtraResponse(List<CodegenOperation> ops, List<CodegenOperation> extraResponseOperations) {
+        int extraResponseCounter = 0;
+        for (CodegenOperation extraResponseOperation : extraResponseOperations) {
+            String responseCode = extraResponseOperation.getOperationId().substring(0, Math.min(extraResponseOperation.getOperationId().length(), 3));
+            extraResponseOperation.operationId = extraResponseOperation.operationId.substring(3);
+            List<CodegenResponse> newResponse = new ArrayList<CodegenResponse>(extraResponseOperation.getResponses());
+            List<CodegenResponse> responsesToDelete = new ArrayList<>();
+
+
+            for (int i = 0; i < newResponse.size(); i++) {
+                if(!newResponse.get(i).getCode().equals(responseCode.toString())){
+                    responsesToDelete.add(newResponse.get(i));
+                }
+            }
+            for (CodegenResponse responseToDelete : responsesToDelete){
+                newResponse.remove(responseToDelete);
+            }
+
+            extraResponseOperation.produces = null;
+            extraResponseOperation.codeCeptionResponse = null;
+            extraResponseOperation.responses = newResponse;
+            extraResponseOperation.operationId += extraResponseCounter;
+            if (responseCode.equals("405")) {
+                extraResponseOperation.resolvedPath += "/ditiseentest";
+                //extraResponseOperation.httpMethod = getRandomHttpMethodForMethodNotAllowed(extraResponseOperation.httpMethod);
+            } else if (responseCode.equals("404")) {
+                extraResponseOperation.resolvedPath += "/ditiseentest";
+            }
+
+            ops.add(extraResponseOperation);
+            extraResponseCounter++;
+        }
+    }
+
     public List<CodegenOperation> sortByHttpMethod(List<CodegenOperation> ops){
         final String[] HTTP_METHODS = {"POST", "GET", "PUT", "DELETE"};
         List<CodegenOperation> opsSorted = new ArrayList<CodegenOperation>();
@@ -468,5 +524,21 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
         }
 
         return param;
+    }
+
+    public String getRandomHttpMethodForMethodNotAllowed(String httpMethod) {
+        String[] httpMethods = {"POST", "GET", "PUT", "DELETE"};
+
+        httpMethods = ArrayUtils.removeElement(httpMethods, httpMethod);
+        if (httpMethod.equals("POST")) {
+            httpMethods = ArrayUtils.removeElement(httpMethods, "PUT");
+        }
+        if (httpMethod.equals("PUT")) {
+            httpMethods = ArrayUtils.removeElement(httpMethods, "POST");
+        }
+
+        int random = new Random().nextInt(httpMethods.length);
+
+        return httpMethods[random];
     }
 }

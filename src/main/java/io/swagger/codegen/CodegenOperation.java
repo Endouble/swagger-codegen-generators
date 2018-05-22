@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 
-public class CodegenOperation implements VendorExtendable {
+public class CodegenOperation implements VendorExtendable, Cloneable {
     public final List<CodegenProperty> responseHeaders = new ArrayList<CodegenProperty>();
     public boolean returnTypeIsPrimitive, returnSimpleType, subresourceOperation, returnJsonEncoded;
     public String path, resolvedPath, operationId, returnType, httpMethod, returnBaseType,
@@ -43,6 +43,10 @@ public class CodegenOperation implements VendorExtendable {
     public String operationIdLowerCase; // for markdown documentation
     public String operationIdCamelCase; // for class names
     public String operationIdSnakeCase;
+
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 
     /**
      * Check if there's at least one parameter
