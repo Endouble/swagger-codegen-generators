@@ -114,13 +114,6 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
         int operationCounter = 0;
         Paths paths = this.openAPI.getPaths();
-//        for (String resourcePath : paths.keySet()) {
-//            PathItem path = paths.get(resourcePath);
-//            Operation postOperation = path.getPost();
-//            if (postOperation != null) {
-//                System.out.println(postOperation.getOperationId());
-//            }
-//        }
 
         for (CodegenOperation operation : ops) {
             ArrayList<Integer> extraResponses = new ArrayList<>();
@@ -164,164 +157,9 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                 response.httpDescription = CodegenHelper.getHTTPDescription(Integer.parseInt(response.getCode()));
             }
 
-            StringBuilder requestBodyJson = new StringBuilder("");
-            if (pathItem != null) {
-                Operation postOperation = pathItem.getPut();
-                if (operation.httpMethod.equals("POST")) {
-                    postOperation = pathItem.getPost();
-                }
-                if (postOperation != null) {
-                    if (postOperation.getRequestBody().getContent() != null) {
-                        updateOperation.contentType = postOperation.getRequestBody().getContent().keySet().iterator().next();
-                        updateOperation.returnJsonEncoded = true;
-                    }
-                    if (postOperation.getOperationId().equals(operation.getOperationId())) {
-                        RequestBody requestBody = postOperation.getRequestBody();
-                        String $ref = "";
-                        Schema openApiRequestBodySchema = null;
-                        if (postOperation.getRequestBody().get$ref() != null) {
-                            $ref = postOperation.getRequestBody().get$ref();
-                            while ($ref != null) {
-                                if ($ref.contains("requestBodies")) {
-                                    $ref = super.getSimpleRef($ref);
-                                    openApiRequestBodySchema = super.openAPI.getComponents().getRequestBodies().get($ref).
-                                            getContent().get("application/json").getSchema();
-                                    $ref = super.openAPI.getComponents().getRequestBodies().get($ref).
-                                            getContent().get("application/json").getSchema().get$ref();
-                                } else {
-                                    $ref = super.getSimpleRef($ref);
-                                    openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
-                                    $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
-                                }
-                            }
-                        } else if (postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref() != null) {
-                            $ref = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref();
-                            while ($ref != null) {
-                                if ($ref.contains("requestBodies")) {
-                                    $ref = super.getSimpleRef($ref);
-                                    openApiRequestBodySchema = super.openAPI.getComponents().getRequestBodies().get($ref).
-                                            getContent().get("application/json").getSchema();
-                                    $ref = super.openAPI.getComponents().getRequestBodies().get($ref).
-                                            getContent().get("application/json").getSchema().get$ref();
-                                } else {
-                                    $ref = super.getSimpleRef($ref);
-                                    openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
-                                    $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
-                                }
-                            }
-                        } else {
-                            openApiRequestBodySchema = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema();
-                        }
+            updateOperation.codeCeptionRequestBody = createRequestBody(pathItem, operation, updateOperation);
+            updateOperation.codeCeptionResponse = createJsonResponse(responses, extraResponses);
 
-                        if ($ref == null || $ref.isEmpty()) {
-                            if (openApiRequestBodySchema != null) {
-                                if(openApiRequestBodySchema.getFormat() != null) {
-                                    if(openApiRequestBodySchema.getFormat().equals("binary") || openApiRequestBodySchema.getFormat().equals("byte")) {
-                                        updateOperation.contentType = REMOVE_CONTENT_TYPE;
-                                    }
-                                }
-                                if (openApiRequestBodySchema.getProperties() != null) {
-                                    Schema schema = openApiRequestBodySchema;
-                                    Map<String, Schema> properties = schema.getProperties();
-                                    Set<String> propertiesKeys = properties.keySet();
-                                    int counter = 0;
-                                    for (String key : propertiesKeys) {
-                                        String property$ref = properties.get(key).get$ref();
-                                        if (property$ref != null) {
-                                            requestBodyJson.append("'" + key + "' => ");
-                                            printProperties(property$ref, key, requestBodyJson, postOperation,
-                                                    false, BEGIN_SPACE, END_SPACE);
-                                        } else if (properties.get(key) instanceof ArraySchema) {
-                                            printArrayProperties(properties.get(key), key, requestBodyJson,
-                                                    postOperation, false, BEGIN_SPACE, END_SPACE, true);
-                                        } else if (properties.get(key).getExample() != null){
-                                            requestBodyJson.append("'" + key + "' => '" + properties.get(key).getExample() + "'");
-                                        } else {
-                                            String fakerMethod = CodegenHelper.getFakerMethod(
-                                                    "$this->faker->",
-                                                    properties.get(key).getType(),
-                                                    properties.get(key).getFormat()
-                                            );
-                                            requestBodyJson.append("'" + key + "' => " + fakerMethod);
-                                        }
-
-                                        if ((counter + 1) < propertiesKeys.size()) {
-                                            requestBodyJson.append(",\n\t\t\t\t");
-                                        }
-                                        counter++;
-
-                                    }
-                                } else if (openApiRequestBodySchema instanceof ArraySchema){
-                                    printArrayProperties(openApiRequestBodySchema, "", requestBodyJson,
-                                            postOperation, false, BEGIN_SPACE, END_SPACE, false);
-                                } else {
-                                    String fakerMethod = CodegenHelper.getFakerMethod(
-                                            "$this->faker->",
-                                            openApiRequestBodySchema.getType(),
-                                            openApiRequestBodySchema.getFormat()
-                                    );
-                                    requestBodyJson.append(fakerMethod);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            updateOperation.codeCeptionRequestBody = requestBodyJson.toString();
-
-            StringBuilder responseJson = new StringBuilder("");
-            for (int i = 0; i < responses.size(); i++) {
-                if (i == 0) {
-                    Schema responseSchema = (Schema) responses.get(0).getSchema();
-                    if (responseSchema != null) {
-                        String $ref = responseSchema.get$ref();
-                        if ($ref != null) {
-                            $ref = super.getSimpleRef($ref);
-                            Schema openApiResponseSchema = null;
-                            if (super.openAPI.getComponents().getResponses() != null) {
-                                if (super.openAPI.getComponents().getResponses().get($ref) != null) {
-                                    openApiResponseSchema = super.openAPI.getComponents().getResponses().get($ref).
-                                            getContent().get("application/json").getSchema();
-                                } else {
-                                    openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
-                                }
-                            } else {
-                                openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
-                            }
-
-                            if (openApiResponseSchema != null) {
-                                Map<String, Schema> properties = openApiResponseSchema.getProperties();
-                                Set<String> propertiesKeys = properties.keySet();
-                                int counter = 0;
-                                for (String key : propertiesKeys) {
-                                    HashMap<String, String> keysToReplace = new HashMap<String, String>();
-                                    keysToReplace.put("number", "float");
-                                    keysToReplace.put("object", "array");
-
-                                    for (Map.Entry<String, String> entry : keysToReplace.entrySet()) {
-                                        if (properties.get(key).getType() != null) {
-                                            if (properties.get(key).getType().toString().equals(entry.getKey())) {
-                                                properties.get(key).type(entry.getValue());
-                                            }
-                                        } else {
-                                            properties.get(key).type("array");
-                                        }
-                                    }
-                                    responseJson.append("'" + key + "' => '" + properties.get(key).getType() + "'");
-
-                                    if ((counter + 1) < propertiesKeys.size()) {
-                                        responseJson.append(",\n\t\t\t\t");
-                                    }
-                                    counter++;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    extraResponses.add(Integer.parseInt(responses.get(i).getCode()));
-                }
-            }
-            updateOperation.codeCeptionResponse = responseJson.toString();
             if (updateOperation.contentType == null) {
                 updateOperation.contentType = "application/json";
                 updateOperation.returnJsonEncoded = true;
@@ -350,6 +188,169 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
         operations.put("operation", sortByHttpMethod(ops));
         return objs;
+    }
+
+    public String createRequestBody(PathItem pathItem, CodegenOperation operation, CodegenOperation updateOperation) {
+        StringBuilder requestBodyJson = new StringBuilder("");
+        if (pathItem != null) {
+            Operation postOperation = pathItem.getPut();
+            if (operation.httpMethod.equals("POST")) {
+                postOperation = pathItem.getPost();
+            }
+            if (postOperation != null) {
+                if (postOperation.getRequestBody().getContent() != null) {
+                    updateOperation.contentType = postOperation.getRequestBody().getContent().keySet().iterator().next();
+                    updateOperation.returnJsonEncoded = true;
+                }
+                if (postOperation.getOperationId().equals(operation.getOperationId())) {
+                    RequestBody requestBody = postOperation.getRequestBody();
+                    String $ref = "";
+                    Schema openApiRequestBodySchema = null;
+                    if (postOperation.getRequestBody().get$ref() != null) {
+                        $ref = postOperation.getRequestBody().get$ref();
+                        while ($ref != null) {
+                            if ($ref.contains("requestBodies")) {
+                                $ref = super.getSimpleRef($ref);
+                                openApiRequestBodySchema = super.openAPI.getComponents().getRequestBodies().get($ref).
+                                        getContent().get("application/json").getSchema();
+                                $ref = super.openAPI.getComponents().getRequestBodies().get($ref).
+                                        getContent().get("application/json").getSchema().get$ref();
+                            } else {
+                                $ref = super.getSimpleRef($ref);
+                                openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
+                                $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
+                            }
+                        }
+                    } else if (postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref() != null) {
+                        $ref = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref();
+                        while ($ref != null) {
+                            if ($ref.contains("requestBodies")) {
+                                $ref = super.getSimpleRef($ref);
+                                openApiRequestBodySchema = super.openAPI.getComponents().getRequestBodies().get($ref).
+                                        getContent().get("application/json").getSchema();
+                                $ref = super.openAPI.getComponents().getRequestBodies().get($ref).
+                                        getContent().get("application/json").getSchema().get$ref();
+                            } else {
+                                $ref = super.getSimpleRef($ref);
+                                openApiRequestBodySchema = super.openAPI.getComponents().getSchemas().get($ref);
+                                $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
+                            }
+                        }
+                    } else {
+                        openApiRequestBodySchema = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema();
+                    }
+
+                    if ($ref == null || $ref.isEmpty()) {
+                        if (openApiRequestBodySchema != null) {
+                            if(openApiRequestBodySchema.getFormat() != null) {
+                                if(openApiRequestBodySchema.getFormat().equals("binary") || openApiRequestBodySchema.getFormat().equals("byte")) {
+                                    updateOperation.contentType = REMOVE_CONTENT_TYPE;
+                                }
+                            }
+                            if (openApiRequestBodySchema.getProperties() != null) {
+                                Schema schema = openApiRequestBodySchema;
+                                Map<String, Schema> properties = schema.getProperties();
+                                Set<String> propertiesKeys = properties.keySet();
+                                int counter = 0;
+                                for (String key : propertiesKeys) {
+                                    String property$ref = properties.get(key).get$ref();
+                                    if (property$ref != null) {
+                                        requestBodyJson.append("'" + key + "' => ");
+                                        printProperties(property$ref, key, requestBodyJson, postOperation,
+                                                false, BEGIN_SPACE, END_SPACE);
+                                    } else if (properties.get(key) instanceof ArraySchema) {
+                                        printArrayProperties(properties.get(key), key, requestBodyJson,
+                                                postOperation, false, BEGIN_SPACE, END_SPACE, true);
+                                    } else if (properties.get(key).getExample() != null){
+                                        requestBodyJson.append("'" + key + "' => '" + properties.get(key).getExample() + "'");
+                                    } else {
+                                        String fakerMethod = CodegenHelper.getFakerMethod(
+                                                "$this->faker->",
+                                                properties.get(key).getType(),
+                                                properties.get(key).getFormat()
+                                        );
+                                        requestBodyJson.append("'" + key + "' => " + fakerMethod);
+                                    }
+
+                                    if ((counter + 1) < propertiesKeys.size()) {
+                                        requestBodyJson.append(",\n\t\t\t\t");
+                                    }
+                                    counter++;
+
+                                }
+                            } else if (openApiRequestBodySchema instanceof ArraySchema){
+                                printArrayProperties(openApiRequestBodySchema, "", requestBodyJson,
+                                        postOperation, false, BEGIN_SPACE, END_SPACE, false);
+                            } else {
+                                String fakerMethod = CodegenHelper.getFakerMethod(
+                                        "$this->faker->",
+                                        openApiRequestBodySchema.getType(),
+                                        openApiRequestBodySchema.getFormat()
+                                );
+                                requestBodyJson.append(fakerMethod);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return requestBodyJson.toString();
+    }
+
+    public String createJsonResponse(List<CodegenResponse> responses, ArrayList<Integer> extraResponses) {
+        StringBuilder responseJson = new StringBuilder("");
+        for (int i = 0; i < responses.size(); i++) {
+            if (i == 0) {
+                Schema responseSchema = (Schema) responses.get(0).getSchema();
+                if (responseSchema != null) {
+                    String $ref = responseSchema.get$ref();
+                    if ($ref != null) {
+                        $ref = super.getSimpleRef($ref);
+                        Schema openApiResponseSchema = null;
+                        if (super.openAPI.getComponents().getResponses() != null) {
+                            if (super.openAPI.getComponents().getResponses().get($ref) != null) {
+                                openApiResponseSchema = super.openAPI.getComponents().getResponses().get($ref).
+                                        getContent().get("application/json").getSchema();
+                            } else {
+                                openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
+                            }
+                        } else {
+                            openApiResponseSchema = super.openAPI.getComponents().getSchemas().get($ref);
+                        }
+
+                        if (openApiResponseSchema != null) {
+                            Map<String, Schema> properties = openApiResponseSchema.getProperties();
+                            Set<String> propertiesKeys = properties.keySet();
+                            int counter = 0;
+                            for (String key : propertiesKeys) {
+                                HashMap<String, String> keysToReplace = new HashMap<String, String>();
+                                keysToReplace.put("number", "float");
+                                keysToReplace.put("object", "array");
+
+                                for (Map.Entry<String, String> entry : keysToReplace.entrySet()) {
+                                    if (properties.get(key).getType() != null) {
+                                        if (properties.get(key).getType().toString().equals(entry.getKey())) {
+                                            properties.get(key).type(entry.getValue());
+                                        }
+                                    } else {
+                                        properties.get(key).type("array");
+                                    }
+                                }
+                                responseJson.append("'" + key + "' => '" + properties.get(key).getType() + "'");
+
+                                if ((counter + 1) < propertiesKeys.size()) {
+                                    responseJson.append(",\n\t\t\t\t");
+                                }
+                                counter++;
+                            }
+                        }
+                    }
+                }
+            } else {
+                extraResponses.add(Integer.parseInt(responses.get(i).getCode()));
+            }
+        }
+        return responseJson.toString();
     }
 
     public void printProperties(String property$ref, String key, StringBuilder requestBodyJson, Operation postOperation,
@@ -477,11 +478,18 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             extraResponseOperation.codeCeptionResponse = null;
             extraResponseOperation.responses = newResponse;
             extraResponseOperation.operationId += extraResponseCounter;
-            if (responseCode.equals("405")) {
-                extraResponseOperation.resolvedPath += "/ditiseentest";
-                //extraResponseOperation.httpMethod = getRandomHttpMethodForMethodNotAllowed(extraResponseOperation.httpMethod);
+
+            if (responseCode.equals("400")) {
+                extraResponseOperation.codeCeptionRequestBody = null;
             } else if (responseCode.equals("404")) {
-                extraResponseOperation.resolvedPath += "/ditiseentest";
+                if (extraResponseOperation.resolvedPath.contains("?")) {
+                    String[] resolvedPathParts = extraResponseOperation.resolvedPath.split("\\?");
+                    extraResponseOperation.resolvedPath = resolvedPathParts[0] + "/Swagger/OpenApi/Specification?" + resolvedPathParts[1];
+                } else {
+                    extraResponseOperation.resolvedPath += "/Swagger/OpenApi/Specification";
+                }
+            } else if (responseCode.equals("405")) {
+                extraResponseOperation.httpMethod = "PATCH";
             }
 
             ops.add(extraResponseOperation);
@@ -490,7 +498,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
     }
 
     public List<CodegenOperation> sortByHttpMethod(List<CodegenOperation> ops){
-        final String[] HTTP_METHODS = {"POST", "GET", "PUT", "DELETE"};
+        final String[] HTTP_METHODS = {"POST", "GET", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PUT", "PATCH", "DELETE"};
         List<CodegenOperation> opsSorted = new ArrayList<CodegenOperation>();
         List<CodegenOperation> operationsToDelete = new ArrayList<CodegenOperation>();
 
@@ -524,21 +532,5 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
         }
 
         return param;
-    }
-
-    public String getRandomHttpMethodForMethodNotAllowed(String httpMethod) {
-        String[] httpMethods = {"POST", "GET", "PUT", "DELETE"};
-
-        httpMethods = ArrayUtils.removeElement(httpMethods, httpMethod);
-        if (httpMethod.equals("POST")) {
-            httpMethods = ArrayUtils.removeElement(httpMethods, "PUT");
-        }
-        if (httpMethod.equals("PUT")) {
-            httpMethods = ArrayUtils.removeElement(httpMethods, "POST");
-        }
-
-        int random = new Random().nextInt(httpMethods.length);
-
-        return httpMethods[random];
     }
 }

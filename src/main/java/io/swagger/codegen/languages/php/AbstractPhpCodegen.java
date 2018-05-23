@@ -47,9 +47,6 @@ public abstract class AbstractPhpCodegen extends DefaultCodegenConfig {
     protected String variableNamingConvention= "snake_case";
     protected String apiDocPath = docsBasePath + File.separator + apiDirName;
     protected String acceptanceDirName = CODECEPTION_DIRECTORY + File.separator + "acceptance";
-    protected String modelDirName = "Model";
-    protected String variableNamingConvention= "snake_case";
-    protected String apiDocPath = docsBasePath + File.separator + apiDirName;
     protected String acceptanceDocPath = docsBasePath + File.separator + acceptanceDirName;
     protected String modelDocPath = docsBasePath + File.separator + modelDirName;
 

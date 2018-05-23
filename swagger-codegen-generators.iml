@@ -16,13 +16,13 @@
     <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-models:2.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-codegen:3.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-models:2.0.0" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser:2.0.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser-v2-converter:2.0.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger:swagger-parser:1.0.35-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger:swagger-core:1.5.19-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger:swagger-models:1.5.19-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger:swagger-annotations:1.5.19-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger:swagger-compat-spec-parser:1.0.35-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser:2.0.0" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser-v2-converter:2.0.0" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger:swagger-parser:1.0.35" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger:swagger-core:1.5.19" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger:swagger-models:1.5.19" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger:swagger-annotations:1.5.19" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger:swagger-compat-spec-parser:1.0.35" level="project" />
     <orderEntry type="library" name="Maven: com.github.java-json-tools:json-schema-validator:2.2.8" level="project" />
     <orderEntry type="library" name="Maven: com.github.java-json-tools:json-schema-core:1.2.8" level="project" />
     <orderEntry type="library" name="Maven: com.github.fge:uri-template:0.9" level="project" />
@@ -52,8 +52,8 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4" level="project" />
     <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-annotations:2.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: javax.validation:validation-api:1.1.0.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser-core:2.0.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser-v3:2.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser-core:2.0.0" level="project" />
+    <orderEntry type="library" name="Maven: io.swagger.parser.v3:swagger-parser-v3:2.0.0" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-ext:1.7.12" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.cal10n:cal10n-api:0.8.1" level="project" />

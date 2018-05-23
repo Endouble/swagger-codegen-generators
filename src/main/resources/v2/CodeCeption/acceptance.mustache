@@ -30,18 +30,18 @@ class {{classname}} extends TestCase
         {{/pathParams}}
         {{/if ~}}
         {{#if queryParams}}{{#queryParams}}{{#if items}}{{#items}}{{#if _enum}}${{baseName}} = {{{_enum}}};
-        ${{baseName}} = ${{baseName}}[0];{{else}}{{#queryParams}}${{{baseName}}} = {{#if example}}'{{example}}'{{else}}''{{/if}};{{/queryParams}}{{/if}}{{/items}}{{else}}${{{baseName}}} = {{#if example}}'{{example}}'{{else}}''{{/if}};{{/if}} //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
+        ${{baseName}} = ${{baseName}}[array_rand(${{baseName}})];{{else}}{{#queryParams}}${{{baseName}}} = {{#if example}}'{{example}}'{{else}}''{{/if}};{{/queryParams}}{{/if}}{{/items}}{{else}}${{{baseName}}} = {{#if example}}'{{example}}'{{else}}''{{/if}};{{/if}} //{{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
         {{/queryParams}}
         {{/if ~}}
         {{#if contentType}}$I->haveHttpHeader('Content-Type', '{{contentType}}');
         {{/if}}$I->send{{httpMethod}}("{{{resolvedPath}}}"{{#ifEquals httpMethod 'PUT'}}, {{#if returnJsonEncoded}}json_encode({{else}}null, {{/if}}
-            [
+{{#codeCeptionRequestBody}}[
                 {{{codeCeptionRequestBody}}}
-            ]
+            ]{{/codeCeptionRequestBody}}
         {{#if returnJsonEncoded}}){{/if}}{{/ifEquals ~}}{{#ifEquals httpMethod 'POST'}}, {{#if returnJsonEncoded}}json_encode({{else}}null, {{/if}}
-            [
+{{#codeCeptionRequestBody}}[
                 {{{codeCeptionRequestBody}}}
-            ]
+            ]{{/codeCeptionRequestBody}}
         {{#if returnJsonEncoded}}){{/if}}{{/ifEquals ~}});
         $I->seeResponseCodeIs(HttpCode::{{#responses}}{{#@first}}{{httpDescription}}{{/@first}}{{/responses}});{{#produces}}{{#@first}}{{#ifEquals mediaType 'application/json'}}
         $I->seeResponseIsJson();{{/ifEquals}}{{#ifEquals mediaType 'application/xml'}}
