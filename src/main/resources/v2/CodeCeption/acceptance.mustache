@@ -35,13 +35,13 @@ class {{classname}} extends TestCase
         {{/if ~}}
         {{#if contentType}}$I->haveHttpHeader('Content-Type', '{{contentType}}');
         {{/if}}$I->send{{httpMethod}}("{{{resolvedPath}}}"{{#ifEquals httpMethod 'PUT'}}, {{#if returnJsonEncoded}}json_encode({{else}}null, {{/if}}
-{{#codeCeptionRequestBody}}[
+            [
                 {{{codeCeptionRequestBody}}}
-            ]{{/codeCeptionRequestBody}}
+            ]
         {{#if returnJsonEncoded}}){{/if}}{{/ifEquals ~}}{{#ifEquals httpMethod 'POST'}}, {{#if returnJsonEncoded}}json_encode({{else}}null, {{/if}}
-{{#codeCeptionRequestBody}}[
+            [
                 {{{codeCeptionRequestBody}}}
-            ]{{/codeCeptionRequestBody}}
+            ]
         {{#if returnJsonEncoded}}){{/if}}{{/ifEquals ~}});
         $I->seeResponseCodeIs(HttpCode::{{#responses}}{{#@first}}{{httpDescription}}{{/@first}}{{/responses}});{{#produces}}{{#@first}}{{#ifEquals mediaType 'application/json'}}
         $I->seeResponseIsJson();{{/ifEquals}}{{#ifEquals mediaType 'application/xml'}}

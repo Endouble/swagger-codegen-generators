@@ -1,6 +1,5 @@
 package io.swagger.codegen.languages.php;
 
-import com.github.jknack.handlebars.EscapingStrategy;
 import io.swagger.codegen.*;
 import io.swagger.codegen.languages.CodegenHelper;
 import io.swagger.v3.oas.models.Operation;
@@ -8,28 +7,28 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.RequestBody;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.util.*;
 
-public class CodeCeptionCodegen extends AbstractPhpCodegen
-{
-     @SuppressWarnings("hiding")
+public class CodeCeptionCodegen extends AbstractPhpCodegen {
+    @SuppressWarnings("hiding")
     protected String apiVersion = "1.0.0";
     private final String BEGIN_SPACE = "\n\t\t\t\t\t";
     private final String END_SPACE = "\n\t\t\t\t";
-    private final String[] DIRECTORIES = {"/" + CODECEPTION_DIRECTORY + "/_data", "/" + CODECEPTION_DIRECTORY + "/_output"};
+    private final String[] DIRECTORIES = {"/" + CODECEPTION_DIRECTORY + "/_data", "/" +
+            CODECEPTION_DIRECTORY + "/_output"};
     private final String REMOVE_CONTENT_TYPE = "RemoveContentType";
-
+    private final String FAKER_CALL = "$this->faker->";
+    private final String HTTP_METHOD_FOR_METHOD_NOT_ALLOWED = "PATCH";
 
     /**
      * Configures the type of generator.
-     * 
-     * @return  the CodegenType for this generator
-     * @see     io.swagger.codegen.CodegenType
+     *
+     * @return the CodegenType for this generator
+     * @see io.swagger.codegen.CodegenType
      */
     public CodegenType getTag() {
         return CodegenType.SERVER;
@@ -38,7 +37,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
     /**
      * Configures a friendly name for the generator.  This will be used by the generator
      * to select the library with the -l flag.
-     * 
+     *
      * @return the friendly name for the generator
      */
     public String getName() {
@@ -53,7 +52,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
     /**
      * Returns human-friendly help for the generator.  Provide the consumer with help
      * tips, parameters here
-     * 
+     *
      * @return A string value for the help message
      */
     public String getHelp() {
@@ -85,24 +84,30 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
         supportingFiles.add(new SupportingFile("codeception.mustache", packagePath + File.separator +
                 srcBasePath + File.separator, "codeception.yml"));
         supportingFiles.add(new SupportingFile("testcase.mustache", packagePath + File.separator +
-                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "acceptance", "TestCase.php"));
-        supportingFiles.add(new SupportingFile("acceptance.suite.mustache", packagePath + File.separator +
-                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator, "acceptance.suite.yml"));
-        supportingFiles.add(new SupportingFile("acceptanceTester.mustache", packagePath + File.separator +
-                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support", "AcceptanceTester.php"));
-        supportingFiles.add(new SupportingFile("acceptanceHelper.mustache", packagePath + File.separator +
-                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" + File.separator + "Helper" + File.separator, "Acceptance.php"));
-        supportingFiles.add(new SupportingFile("acceptanceTesterActions.mustache", packagePath + File.separator +
-                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" + File.separator + "_generated" + File.separator, "AcceptanceTesterActions.php"));
+                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "acceptance",
+                "TestCase.php"));
+        supportingFiles.add(new SupportingFile("acceptance.suite.mustache", packagePath +
+                File.separator + srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator,
+                "acceptance.suite.yml"));
+        supportingFiles.add(new SupportingFile("acceptanceTester.mustache", packagePath +
+                File.separator + srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support",
+                "AcceptanceTester.php"));
+        supportingFiles.add(new SupportingFile("acceptanceHelper.mustache", packagePath +
+                File.separator + srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" +
+                File.separator + "Helper" + File.separator, "Acceptance.php"));
+        supportingFiles.add(new SupportingFile("acceptanceTesterActions.mustache", packagePath +
+                File.separator + srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" +
+                File.separator + "_generated" + File.separator, "AcceptanceTesterActions.php"));
         supportingFiles.add(new SupportingFile("image.png", packagePath + File.separator +
-                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_data", "image.png"));
+                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_data",
+                "image.png"));
     }
 
     @Override
     public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
         List<CodegenOperation> extraResponseOperations = new ArrayList<CodegenOperation>();
         for (String directory : DIRECTORIES) {
-            if(!new File(this.outputFolder + directory).isDirectory()) {
+            if (!new File(this.outputFolder + directory).isDirectory()) {
                 new File(this.outputFolder + directory).mkdirs();
             }
         }
@@ -127,13 +132,14 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             }
             if (operation.queryParams.size() > 0) {
                 for (int i = 0; i < operation.queryParams.size(); i++) {
-                    if(i == 0) {
+                    if (i == 0) {
                         path += "?";
                     } else {
                         path += "&";
                     }
                     setParamExample(operation.queryParams.get(i));
-                    path += operation.queryParams.get(i).baseName + "=$" + operation.queryParams.get(i).baseName;;
+                    path += operation.queryParams.get(i).baseName + "=$" + operation.queryParams.get(i).baseName;
+                    ;
 
                     if (operation.getQueryParams().get(i).getItems() != null) {
                         if (operation.getQueryParams().get(i).getItems().get_enum() != null) {
@@ -173,7 +179,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             for (Integer extraResponse : extraResponses) {
                 CodegenOperation extraOperation = null;
                 try {
-                    extraOperation = (CodegenOperation)updateOperation.clone();
+                    extraOperation = (CodegenOperation) updateOperation.clone();
                 } catch (CloneNotSupportedException e) {
                     e.printStackTrace();
                 }
@@ -221,8 +227,10 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                 $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
                             }
                         }
-                    } else if (postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref() != null) {
-                        $ref = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema().get$ref();
+                    } else if (postOperation.getRequestBody().getContent().get(postOperation.getRequestBody()
+                            .getContent().keySet().iterator().next()).getSchema().get$ref() != null) {
+                        $ref = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody()
+                                .getContent().keySet().iterator().next()).getSchema().get$ref();
                         while ($ref != null) {
                             if ($ref.contains("requestBodies")) {
                                 $ref = super.getSimpleRef($ref);
@@ -237,13 +245,15 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                             }
                         }
                     } else {
-                        openApiRequestBodySchema = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent().keySet().iterator().next()).getSchema();
+                        openApiRequestBodySchema = postOperation.getRequestBody().getContent().get(postOperation
+                                .getRequestBody().getContent().keySet().iterator().next()).getSchema();
                     }
 
                     if ($ref == null || $ref.isEmpty()) {
                         if (openApiRequestBodySchema != null) {
-                            if(openApiRequestBodySchema.getFormat() != null) {
-                                if(openApiRequestBodySchema.getFormat().equals("binary") || openApiRequestBodySchema.getFormat().equals("byte")) {
+                            if (openApiRequestBodySchema.getFormat() != null) {
+                                if (openApiRequestBodySchema.getFormat().equals("binary") || openApiRequestBodySchema
+                                        .getFormat().equals("byte")) {
                                     updateOperation.contentType = REMOVE_CONTENT_TYPE;
                                 }
                             }
@@ -261,11 +271,12 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                     } else if (properties.get(key) instanceof ArraySchema) {
                                         printArrayProperties(properties.get(key), key, requestBodyJson,
                                                 postOperation, false, BEGIN_SPACE, END_SPACE, true);
-                                    } else if (properties.get(key).getExample() != null){
-                                        requestBodyJson.append("'" + key + "' => '" + properties.get(key).getExample() + "'");
+                                    } else if (properties.get(key).getExample() != null) {
+                                        requestBodyJson.append("'" + key + "' => '" + properties.get(key).getExample() +
+                                                "'");
                                     } else {
                                         String fakerMethod = CodegenHelper.getFakerMethod(
-                                                "$this->faker->",
+                                                FAKER_CALL,
                                                 properties.get(key).getType(),
                                                 properties.get(key).getFormat()
                                         );
@@ -278,12 +289,12 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                     counter++;
 
                                 }
-                            } else if (openApiRequestBodySchema instanceof ArraySchema){
+                            } else if (openApiRequestBodySchema instanceof ArraySchema) {
                                 printArrayProperties(openApiRequestBodySchema, "", requestBodyJson,
                                         postOperation, false, BEGIN_SPACE, END_SPACE, false);
                             } else {
                                 String fakerMethod = CodegenHelper.getFakerMethod(
-                                        "$this->faker->",
+                                        FAKER_CALL,
                                         openApiRequestBodySchema.getType(),
                                         openApiRequestBodySchema.getFormat()
                                 );
@@ -388,10 +399,11 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             int propertyCounter = 0;
             for (String keyOfProperty : propertiesKeysOfProperty) {
                 if (propertiesOfProperty.get(keyOfProperty).getExample() != null) {
-                    requestBodyJson.append("'" + keyOfProperty + "' => '" + propertiesOfProperty.get(keyOfProperty).getExample() + "'");
+                    requestBodyJson.append("'" + keyOfProperty + "' => '" + propertiesOfProperty.get(keyOfProperty)
+                            .getExample() + "'");
                 } else {
                     String fakerMethod = CodegenHelper.getFakerMethod(
-                            "$this->faker->",
+                            FAKER_CALL,
                             propertiesOfProperty.get(keyOfProperty).getType(),
                             propertiesOfProperty.get(keyOfProperty).getFormat()
                     );
@@ -431,7 +443,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
                                      Boolean recursive, String beginSpace, String endSpace, Boolean addArray) {
         if (((ArraySchema) property).getItems().getType() != null) {
             String fakerMethod = CodegenHelper.getFakerMethod(
-                    "$this->faker->",
+                    FAKER_CALL,
                     ((ArraySchema) property).getItems().getType(),
                     ((ArraySchema) property).getItems().getFormat()
             );
@@ -456,21 +468,23 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
 
     }
 
-    public void addOperationForExtraResponse(List<CodegenOperation> ops, List<CodegenOperation> extraResponseOperations) {
+    public void addOperationForExtraResponse(List<CodegenOperation> ops, List<CodegenOperation> extraResponseOperations)
+    {
         int extraResponseCounter = 0;
         for (CodegenOperation extraResponseOperation : extraResponseOperations) {
-            String responseCode = extraResponseOperation.getOperationId().substring(0, Math.min(extraResponseOperation.getOperationId().length(), 3));
+            String responseCode = extraResponseOperation.getOperationId().substring(0, Math.min(extraResponseOperation
+                    .getOperationId().length(), 3));
             extraResponseOperation.operationId = extraResponseOperation.operationId.substring(3);
             List<CodegenResponse> newResponse = new ArrayList<CodegenResponse>(extraResponseOperation.getResponses());
             List<CodegenResponse> responsesToDelete = new ArrayList<>();
 
 
             for (int i = 0; i < newResponse.size(); i++) {
-                if(!newResponse.get(i).getCode().equals(responseCode.toString())){
+                if (!newResponse.get(i).getCode().equals(responseCode.toString())) {
                     responsesToDelete.add(newResponse.get(i));
                 }
             }
-            for (CodegenResponse responseToDelete : responsesToDelete){
+            for (CodegenResponse responseToDelete : responsesToDelete) {
                 newResponse.remove(responseToDelete);
             }
 
@@ -480,16 +494,22 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
             extraResponseOperation.operationId += extraResponseCounter;
 
             if (responseCode.equals("400")) {
-                extraResponseOperation.codeCeptionRequestBody = null;
+                if (extraResponseOperation.returnJsonEncoded == true
+                        && (extraResponseOperation.httpMethod.equals("POST")
+                        || extraResponseOperation.httpMethod.equals("PUT"))) {
+                    extraResponseOperation.returnJsonEncoded = false;
+                    extraResponseOperation.codeCeptionRequestBody = CodegenHelper.getFakerMethod(FAKER_CALL, "string", "binary");
+                }
             } else if (responseCode.equals("404")) {
                 if (extraResponseOperation.resolvedPath.contains("?")) {
                     String[] resolvedPathParts = extraResponseOperation.resolvedPath.split("\\?");
-                    extraResponseOperation.resolvedPath = resolvedPathParts[0] + "/Swagger/OpenApi/Specification?" + resolvedPathParts[1];
+                    extraResponseOperation.resolvedPath = resolvedPathParts[0] + "/Swagger/OpenApi/Specification?" +
+                            resolvedPathParts[1];
                 } else {
                     extraResponseOperation.resolvedPath += "/Swagger/OpenApi/Specification";
                 }
             } else if (responseCode.equals("405")) {
-                extraResponseOperation.httpMethod = "PATCH";
+                extraResponseOperation.httpMethod = HTTP_METHOD_FOR_METHOD_NOT_ALLOWED;
             }
 
             ops.add(extraResponseOperation);
@@ -497,14 +517,14 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
         }
     }
 
-    public List<CodegenOperation> sortByHttpMethod(List<CodegenOperation> ops){
-        final String[] HTTP_METHODS = {"POST", "GET", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PUT", "PATCH", "DELETE"};
+    public List<CodegenOperation> sortByHttpMethod(List<CodegenOperation> ops) {
+        final String[] HTTP_METHODS_ORDER = {"POST", "GET", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PUT", "PATCH", "DELETE"};
         List<CodegenOperation> opsSorted = new ArrayList<CodegenOperation>();
         List<CodegenOperation> operationsToDelete = new ArrayList<CodegenOperation>();
 
-        for (int i = 0; i < HTTP_METHODS.length; i++) {
+        for (int i = 0; i < HTTP_METHODS_ORDER.length; i++) {
             for (int j = 0; j < ops.size(); j++) {
-                if (ops.get(j).httpMethod.equals(HTTP_METHODS[i])) {
+                if (ops.get(j).httpMethod.equals(HTTP_METHODS_ORDER[i])) {
                     opsSorted.add(ops.get(j));
                     operationsToDelete.add(ops.get(j));
                 }
@@ -517,7 +537,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen
         return opsSorted;
     }
 
-    public CodegenParameter setParamExample(CodegenParameter param){
+    public CodegenParameter setParamExample(CodegenParameter param) {
         JSONObject paramJsonObject = new JSONObject(param.getJsonSchema());
 
         if (paramJsonObject.has("example")) {
