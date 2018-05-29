@@ -77,30 +77,62 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         apiDocTemplateFiles.clear();
         modelDocTemplateFiles.clear();
 
-        supportingFiles.add(new SupportingFile("composer.mustache", packagePath + File.separator +
-                srcBasePath, "composer.json"));
-        supportingFiles.add(new SupportingFile("README.mustache", packagePath + File.separator +
-                srcBasePath, "README.md"));
-        supportingFiles.add(new SupportingFile("codeception.mustache", packagePath + File.separator +
-                srcBasePath + File.separator, "codeception.yml"));
-        supportingFiles.add(new SupportingFile("testcase.mustache", packagePath + File.separator +
-                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "acceptance",
-                "TestCase.php"));
-        supportingFiles.add(new SupportingFile("acceptance.suite.mustache", packagePath +
-                File.separator + srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator,
-                "acceptance.suite.yml"));
-        supportingFiles.add(new SupportingFile("acceptanceTester.mustache", packagePath +
-                File.separator + srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support",
-                "AcceptanceTester.php"));
-        supportingFiles.add(new SupportingFile("acceptanceHelper.mustache", packagePath +
-                File.separator + srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" +
-                File.separator + "Helper" + File.separator, "Acceptance.php"));
-        supportingFiles.add(new SupportingFile("acceptanceTesterActions.mustache", packagePath +
-                File.separator + srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" +
-                File.separator + "_generated" + File.separator, "AcceptanceTesterActions.php"));
-        supportingFiles.add(new SupportingFile("image.png", packagePath + File.separator +
-                srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_data",
-                "image.png"));
+        supportingFiles.add(new SupportingFile(
+                "composer.mustache", packagePath + File.separator + srcBasePath,
+                "composer.json")
+        );
+        supportingFiles.add(
+                new SupportingFile(
+                        "README.mustache", packagePath + File.separator + srcBasePath,
+                        "README.md"
+                )
+        );
+        supportingFiles.add(
+                new SupportingFile(
+                        "codeception.mustache", packagePath + File.separator + srcBasePath +
+                        File.separator, "codeception.yml"
+                )
+        );
+        supportingFiles.add(
+                new SupportingFile(
+                        "testcase.mustache", packagePath + File.separator + srcBasePath +
+                        File.separator + CODECEPTION_DIRECTORY + File.separator + "acceptance",
+                        "TestCase.php"
+                )
+        );
+        supportingFiles.add(
+                new SupportingFile(
+                        "acceptance.suite.mustache", packagePath + File.separator + srcBasePath +
+                        File.separator + CODECEPTION_DIRECTORY + File.separator, "acceptance.suite.yml"
+                )
+        );
+        supportingFiles.add(
+                new SupportingFile(
+                        "acceptanceTester.mustache", packagePath + File.separator + srcBasePath +
+                        File.separator + CODECEPTION_DIRECTORY + File.separator + "_support",
+                        "AcceptanceTester.php"
+                )
+        );
+        supportingFiles.add(
+                new SupportingFile(
+                        "acceptanceHelper.mustache", packagePath + File.separator + srcBasePath +
+                        File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" + File.separator +
+                        "Helper" + File.separator, "Acceptance.php"
+                )
+        );
+        supportingFiles.add(
+                new SupportingFile(
+                        "acceptanceTesterActions.mustache", packagePath + File.separator +
+                        srcBasePath + File.separator + CODECEPTION_DIRECTORY + File.separator + "_support" +
+                        File.separator + "_generated" + File.separator, "AcceptanceTesterActions.php"
+                )
+        );
+        supportingFiles.add(
+                new SupportingFile(
+                        "image.png", packagePath + File.separator + srcBasePath + File.separator +
+                        CODECEPTION_DIRECTORY + File.separator + "_data", "image.png"
+                )
+        );
     }
 
     @Override
@@ -227,8 +259,10 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
                                 $ref = super.openAPI.getComponents().getSchemas().get($ref).get$ref();
                             }
                         }
-                    } else if (postOperation.getRequestBody().getContent().get(postOperation.getRequestBody()
-                            .getContent().keySet().iterator().next()).getSchema().get$ref() != null) {
+                    } else if (
+                            postOperation.getRequestBody().getContent().get(postOperation.getRequestBody().getContent()
+                                    .keySet().iterator().next()).getSchema().get$ref() != null
+                    ) {
                         $ref = postOperation.getRequestBody().getContent().get(postOperation.getRequestBody()
                                 .getContent().keySet().iterator().next()).getSchema().get$ref();
                         while ($ref != null) {
@@ -252,8 +286,10 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
                     if ($ref == null || $ref.isEmpty()) {
                         if (openApiRequestBodySchema != null) {
                             if (openApiRequestBodySchema.getFormat() != null) {
-                                if (openApiRequestBodySchema.getFormat().equals("binary") || openApiRequestBodySchema
-                                        .getFormat().equals("byte")) {
+                                if (
+                                    openApiRequestBodySchema.getFormat().equals("binary")
+                                    || openApiRequestBodySchema.getFormat().equals("byte")
+                                ) {
                                     updateOperation.contentType = REMOVE_CONTENT_TYPE;
                                 }
                             }
@@ -266,19 +302,24 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
                                     String property$ref = properties.get(key).get$ref();
                                     if (property$ref != null) {
                                         requestBodyJson.append("'" + key + "' => ");
-                                        printProperties(property$ref, key, requestBodyJson, postOperation,
-                                                false, BEGIN_SPACE, END_SPACE);
+                                        printProperties(
+                                            property$ref, key, requestBodyJson, postOperation, false,
+                                            BEGIN_SPACE, END_SPACE
+                                        );
                                     } else if (properties.get(key) instanceof ArraySchema) {
-                                        printArrayProperties(properties.get(key), key, requestBodyJson,
-                                                postOperation, false, BEGIN_SPACE, END_SPACE, true);
+                                        printArrayProperties(
+                                            properties.get(key), key, requestBodyJson, postOperation,
+                                            false, BEGIN_SPACE, END_SPACE, true
+                                        );
                                     } else if (properties.get(key).getExample() != null) {
-                                        requestBodyJson.append("'" + key + "' => '" + properties.get(key).getExample() +
-                                                "'");
+                                        requestBodyJson.append(
+                                            "'" + key + "' => '" + properties.get(key).getExample() + "'"
+                                        );
                                     } else {
                                         String fakerMethod = CodegenHelper.getFakerMethod(
-                                                FAKER_CALL,
-                                                properties.get(key).getType(),
-                                                properties.get(key).getFormat()
+                                            FAKER_CALL,
+                                            properties.get(key).getType(),
+                                            properties.get(key).getFormat()
                                         );
                                         requestBodyJson.append("'" + key + "' => " + fakerMethod);
                                     }
@@ -290,13 +331,15 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
 
                                 }
                             } else if (openApiRequestBodySchema instanceof ArraySchema) {
-                                printArrayProperties(openApiRequestBodySchema, "", requestBodyJson,
-                                        postOperation, false, BEGIN_SPACE, END_SPACE, false);
+                                printArrayProperties(
+                                    openApiRequestBodySchema, "", requestBodyJson, postOperation,
+                                    false, BEGIN_SPACE, END_SPACE, false
+                                );
                             } else {
                                 String fakerMethod = CodegenHelper.getFakerMethod(
-                                        FAKER_CALL,
-                                        openApiRequestBodySchema.getType(),
-                                        openApiRequestBodySchema.getFormat()
+                                    FAKER_CALL,
+                                    openApiRequestBodySchema.getType(),
+                                    openApiRequestBodySchema.getFormat()
                                 );
                                 requestBodyJson.append(fakerMethod);
                             }
@@ -364,8 +407,10 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         return responseJson.toString();
     }
 
-    public void printProperties(String property$ref, String key, StringBuilder requestBodyJson, Operation postOperation,
-                                Boolean recursive, String beginSpace, String endSpace) {
+    public void printProperties(
+            String property$ref, String key, StringBuilder requestBodyJson, Operation postOperation, Boolean recursive,
+            String beginSpace, String endSpace
+    ) {
         if (recursive) {
             beginSpace = beginSpace + "\t";
             endSpace = endSpace + "\t";
@@ -385,8 +430,10 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         if (propertyOpenApiRequestBodySchema instanceof ComposedSchema) {
             propertyOpenApiRequestBodySchema = ((ComposedSchema) propertyOpenApiRequestBodySchema).getAllOf().get(0);
             if (propertyOpenApiRequestBodySchema.get$ref() != null) {
-                printProperties(propertyOpenApiRequestBodySchema.get$ref(), key,
-                        requestBodyJson, postOperation, true, beginSpace, endSpace);
+                printProperties(
+                    propertyOpenApiRequestBodySchema.get$ref(), key, requestBodyJson, postOperation,
+                    true, beginSpace, endSpace
+                );
             } else {
                 propertiesOfProperty = propertyOpenApiRequestBodySchema.getProperties();
             }
@@ -399,26 +446,31 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
             int propertyCounter = 0;
             for (String keyOfProperty : propertiesKeysOfProperty) {
                 if (propertiesOfProperty.get(keyOfProperty).getExample() != null) {
-                    requestBodyJson.append("'" + keyOfProperty + "' => '" + propertiesOfProperty.get(keyOfProperty)
-                            .getExample() + "'");
+                    requestBodyJson.append(
+                        "'" + keyOfProperty + "' => '" + propertiesOfProperty.get(keyOfProperty).getExample() + "'"
+                    );
                 } else {
                     String fakerMethod = CodegenHelper.getFakerMethod(
-                            FAKER_CALL,
-                            propertiesOfProperty.get(keyOfProperty).getType(),
-                            propertiesOfProperty.get(keyOfProperty).getFormat()
+                        FAKER_CALL,
+                        propertiesOfProperty.get(keyOfProperty).getType(),
+                        propertiesOfProperty.get(keyOfProperty).getFormat()
                     );
 
                     requestBodyJson.append("'" + keyOfProperty + "' => " + fakerMethod);
                 }
 
                 if (propertiesOfProperty.get(keyOfProperty) instanceof ArraySchema) {
-                    printArrayProperties(propertiesOfProperty.get(keyOfProperty), "", requestBodyJson,
-                            postOperation, true, beginSpace, endSpace, false);
+                    printArrayProperties(
+                        propertiesOfProperty.get(keyOfProperty), "", requestBodyJson, postOperation,
+                        true, beginSpace, endSpace, false
+                    );
                 }
 
                 if (propertiesOfProperty.get(keyOfProperty).get$ref() != null) {
-                    printProperties(propertiesOfProperty.get(keyOfProperty).get$ref(), keyOfProperty, requestBodyJson,
-                            postOperation, true, beginSpace, endSpace);
+                    printProperties(
+                        propertiesOfProperty.get(keyOfProperty).get$ref(), keyOfProperty, requestBodyJson,
+                        postOperation, true, beginSpace, endSpace
+                    );
                 }
 
                 if ((propertyCounter + 1) < propertiesKeysOfProperty.size()) {
@@ -439,13 +491,15 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         }
     }
 
-    public void printArrayProperties(Schema property, String key, StringBuilder requestBodyJson, Operation postOperation,
-                                     Boolean recursive, String beginSpace, String endSpace, Boolean addArray) {
+    public void printArrayProperties(
+            Schema property, String key, StringBuilder requestBodyJson, Operation postOperation, Boolean recursive,
+            String beginSpace, String endSpace, Boolean addArray
+    ) {
         if (((ArraySchema) property).getItems().getType() != null) {
             String fakerMethod = CodegenHelper.getFakerMethod(
-                    FAKER_CALL,
-                    ((ArraySchema) property).getItems().getType(),
-                    ((ArraySchema) property).getItems().getFormat()
+                FAKER_CALL,
+                ((ArraySchema) property).getItems().getType(),
+                ((ArraySchema) property).getItems().getFormat()
             );
             if (!key.isEmpty()) {
                 requestBodyJson.append("'" + key + "' => ");
@@ -458,9 +512,10 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
             if (addArray) {
                 requestBodyJson.append("array(");
             }
-            printProperties(((ArraySchema) property).getItems().get$ref(),
-                    key, requestBodyJson, postOperation, recursive, beginSpace,
-                    endSpace);
+            printProperties(
+                ((ArraySchema) property).getItems().get$ref(), key, requestBodyJson, postOperation, recursive,
+                beginSpace, endSpace
+            );
             if (addArray) {
                 requestBodyJson.append(")");
             }
@@ -472,8 +527,9 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
     {
         int extraResponseCounter = 0;
         for (CodegenOperation extraResponseOperation : extraResponseOperations) {
-            String responseCode = extraResponseOperation.getOperationId().substring(0, Math.min(extraResponseOperation
-                    .getOperationId().length(), 3));
+            String responseCode = extraResponseOperation.getOperationId().substring(
+                    0, Math.min(extraResponseOperation.getOperationId().length(), 3)
+            );
             extraResponseOperation.operationId = extraResponseOperation.operationId.substring(3);
             List<CodegenResponse> newResponse = new ArrayList<CodegenResponse>(extraResponseOperation.getResponses());
             List<CodegenResponse> responsesToDelete = new ArrayList<>();
@@ -495,10 +551,12 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
 
             if (responseCode.equals("400")) {
                 if (extraResponseOperation.returnJsonEncoded == true
-                        && (extraResponseOperation.httpMethod.equals("POST")
-                        || extraResponseOperation.httpMethod.equals("PUT"))) {
+                    && (extraResponseOperation.httpMethod.equals("POST")
+                    || extraResponseOperation.httpMethod.equals("PUT"))
+                ) {
                     extraResponseOperation.returnJsonEncoded = false;
-                    extraResponseOperation.codeCeptionRequestBody = CodegenHelper.getFakerMethod(FAKER_CALL, "string", "binary");
+                    extraResponseOperation.codeCeptionRequestBody = CodegenHelper.getFakerMethod(FAKER_CALL,
+                            "string", "binary");
                 }
             } else if (responseCode.equals("404")) {
                 if (extraResponseOperation.resolvedPath.contains("?")) {
@@ -518,7 +576,9 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
     }
 
     public List<CodegenOperation> sortByHttpMethod(List<CodegenOperation> ops) {
-        final String[] HTTP_METHODS_ORDER = {"POST", "GET", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PUT", "PATCH", "DELETE"};
+        final String[] HTTP_METHODS_ORDER = {
+                "POST", "GET", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PUT", "PATCH", "DELETE"
+        };
         List<CodegenOperation> opsSorted = new ArrayList<CodegenOperation>();
         List<CodegenOperation> operationsToDelete = new ArrayList<CodegenOperation>();
 
