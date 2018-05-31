@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
-public class CodegenParameter implements VendorExtendable {
+public class CodegenParameter implements VendorExtendable, Cloneable {
     public boolean secondaryParam, notFile;
     public String baseName, paramName, dataType, datatypeWithEnum, dataFormat,
           collectionFormat, description, unescapedDescription, baseType, defaultValue, enumName;
@@ -16,6 +16,10 @@ public class CodegenParameter implements VendorExtendable {
     public Map<String, Object> allowableValues;
     public CodegenProperty items;
     public Map<String, Object> vendorExtensions = new HashMap<>();
+
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 
     /**
      * Determines whether this parameter is mandatory. If the parameter is in "path",

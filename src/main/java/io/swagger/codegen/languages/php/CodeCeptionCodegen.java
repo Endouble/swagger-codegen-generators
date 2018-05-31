@@ -209,14 +209,25 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
             ops.set(operationCounter, updateOperation);
 
             for (Integer extraResponse : extraResponses) {
-                CodegenOperation extraOperation = null;
-                try {
-                    extraOperation = (CodegenOperation) updateOperation.clone();
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace();
+                if(
+                extraResponse.equals(400)
+                    &&
+                    (
+                        !updateOperation.httpMethod.equals("POST")
+                        && !updateOperation.httpMethod.equals("PUT")
+                    )
+                ) {
+
+                } else {
+                    CodegenOperation extraOperation = null;
+                    try {
+                        extraOperation = (CodegenOperation) updateOperation.clone();
+                    } catch (CloneNotSupportedException e) {
+                        e.printStackTrace();
+                    }
+                    extraOperation.operationId = extraResponse + extraOperation.operationId;
+                    extraResponseOperations.add(extraOperation);
                 }
-                extraOperation.operationId = extraResponse + extraOperation.operationId;
-                extraResponseOperations.add(extraOperation);
             }
 
             operationCounter++;
@@ -534,7 +545,6 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
             List<CodegenResponse> newResponse = new ArrayList<CodegenResponse>(extraResponseOperation.getResponses());
             List<CodegenResponse> responsesToDelete = new ArrayList<>();
 
-
             for (int i = 0; i < newResponse.size(); i++) {
                 if (!newResponse.get(i).getCode().equals(responseCode.toString())) {
                     responsesToDelete.add(newResponse.get(i));
@@ -547,7 +557,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
             extraResponseOperation.produces = null;
             extraResponseOperation.codeCeptionResponse = null;
             extraResponseOperation.responses = newResponse;
-            extraResponseOperation.operationId += extraResponseCounter;
+            extraResponseOperation.operationId += "TestResponse" + responseCode;
 
             if (responseCode.equals("400")) {
                 if (extraResponseOperation.returnJsonEncoded == true
@@ -559,15 +569,57 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
                             "string", "binary");
                 }
             } else if (responseCode.equals("404")) {
-                if (extraResponseOperation.resolvedPath.contains("?")) {
-                    String[] resolvedPathParts = extraResponseOperation.resolvedPath.split("\\?");
-                    extraResponseOperation.resolvedPath = resolvedPathParts[0] + "/Swagger/OpenApi/Specification?" +
-                            resolvedPathParts[1];
+                if (!extraResponseOperation.pathParams.isEmpty() || !extraResponseOperation.queryParams.isEmpty()) {
+                    List<CodegenParameter> extraPathParams = new ArrayList<>();
+                    List<CodegenParameter> extraQueryParams = new ArrayList<>();
+
+                    for (CodegenParameter pathParam : extraResponseOperation.pathParams) {
+                        try {
+                            extraPathParams.add((CodegenParameter) pathParam.clone());
+                        } catch (CloneNotSupportedException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                    for (CodegenParameter queryParam : extraResponseOperation.queryParams) {
+                        try {
+                            extraQueryParams.add((CodegenParameter) queryParam.clone());
+                        } catch (CloneNotSupportedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    for (CodegenParameter pathParam : extraPathParams) {
+                        pathParam.example = "!@#$% ^&*()";
+                    }
+
+                    for (CodegenParameter queryParam : extraQueryParams) {
+                        queryParam.example = "!@#$% ^&*()";
+                    }
+
+                    extraResponseOperation.pathParams = extraPathParams;
+                    extraResponseOperation.queryParams = extraQueryParams;
                 } else {
-                    extraResponseOperation.resolvedPath += "/Swagger/OpenApi/Specification";
+                    if (extraResponseOperation.resolvedPath.contains("?")) {
+                        String[] resolvedPathParts = extraResponseOperation.resolvedPath.split("\\?");
+                        extraResponseOperation.resolvedPath = resolvedPathParts[0] + "/Swagger/OpenApi/Specification?" +
+                                resolvedPathParts[1];
+                    } else {
+                        extraResponseOperation.resolvedPath += "/Swagger/OpenApi/Specification";
+                    }
                 }
             } else if (responseCode.equals("405")) {
-                extraResponseOperation.httpMethod = HTTP_METHOD_FOR_METHOD_NOT_ALLOWED;
+                if (extraResponseOperation.httpMethod.equals("GET") || extraResponseOperation.httpMethod.equals("DELETE")) {
+                    if (extraResponseOperation.resolvedPath.contains("?")) {
+                        String[] resolvedPathParts = extraResponseOperation.resolvedPath.split("\\?");
+                        extraResponseOperation.resolvedPath = resolvedPathParts[0] + "?!@#$%^&*()" +
+                                resolvedPathParts[1];
+                    } else {
+                        extraResponseOperation.resolvedPath += "?!@#$%^&*()";
+                    }
+                } else {
+                    extraResponseOperation.httpMethod = HTTP_METHOD_FOR_METHOD_NOT_ALLOWED;
+                }
             }
 
             ops.add(extraResponseOperation);
