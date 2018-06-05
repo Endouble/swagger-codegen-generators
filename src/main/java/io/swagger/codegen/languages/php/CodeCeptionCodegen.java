@@ -135,6 +135,12 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         );
     }
 
+    /**
+     * Change operations values to CodeCeption format.
+     *
+     * @param objs Map<String, Object>
+     * @return Map<String, Object>
+     */
     @Override
     public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
         List<CodegenOperation> extraResponseOperations = new ArrayList<CodegenOperation>();
@@ -239,6 +245,14 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         return objs;
     }
 
+    /**
+     * Convert schemas of requestBody to CodeCeption requestBody.
+     *
+     * @param pathItem PathItem
+     * @param operation CodegenOperation
+     * @param updateOperation CodegenOperation
+     * @return String
+     */
     public String createRequestBody(PathItem pathItem, CodegenOperation operation, CodegenOperation updateOperation) {
         StringBuilder requestBodyJson = new StringBuilder("");
         if (pathItem != null) {
@@ -362,6 +376,13 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         return requestBodyJson.toString();
     }
 
+    /**
+     * Create CodeCeption response in JSON format.
+     *
+     * @param responses List<CodegenResponse>
+     * @param extraResponses ArrayList<Integer>
+     * @return String
+     */
     public String createJsonResponse(List<CodegenResponse> responses, ArrayList<Integer> extraResponses) {
         StringBuilder responseJson = new StringBuilder("");
         for (int i = 0; i < responses.size(); i++) {
@@ -418,6 +439,17 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         return responseJson.toString();
     }
 
+    /**
+     * Convert schemas to CodeCeption.
+     *
+     * @param property$ref String
+     * @param key String
+     * @param requestBodyJson StringBuilder
+     * @param postOperation Operation
+     * @param recursive Boolean
+     * @param beginSpace String
+     * @param endSpace String
+     */
     public void printProperties(
             String property$ref, String key, StringBuilder requestBodyJson, Operation postOperation, Boolean recursive,
             String beginSpace, String endSpace
@@ -502,7 +534,19 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         }
     }
 
-    public void printArrayProperties(
+    /**
+     * Convert ArraySchema to CodeCeption array.
+     *
+     * @param property Schema
+     * @param key String
+     * @param requestBodyJson StringBuilder
+     * @param postOperation Operation
+     * @param recursive Boolean
+     * @param beginSpace String
+     * @param endSpace String
+     * @param addArray Boolean
+     */
+    private void printArrayProperties(
             Schema property, String key, StringBuilder requestBodyJson, Operation postOperation, Boolean recursive,
             String beginSpace, String endSpace, Boolean addArray
     ) {
@@ -534,7 +578,13 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
 
     }
 
-    public void addOperationForExtraResponse(List<CodegenOperation> ops, List<CodegenOperation> extraResponseOperations)
+    /**
+     * Add an extra operation for other responses then the first(standard/expected) response.
+     *
+     * @param ops List<CodegenOperation>
+     * @param extraResponseOperations List<CodegenOperation>
+     */
+    private void addOperationForExtraResponse(List<CodegenOperation> ops, List<CodegenOperation> extraResponseOperations)
     {
         int extraResponseCounter = 0;
         for (CodegenOperation extraResponseOperation : extraResponseOperations) {
@@ -560,7 +610,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
             extraResponseOperation.operationId += "TestResponse" + responseCode;
 
             if (responseCode.equals("400")) {
-                if (extraResponseOperation.returnJsonEncoded == true
+                if (extraResponseOperation.returnJsonEncoded
                     && (extraResponseOperation.httpMethod.equals("POST")
                     || extraResponseOperation.httpMethod.equals("PUT"))
                 ) {
@@ -627,7 +677,13 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         }
     }
 
-    public List<CodegenOperation> sortByHttpMethod(List<CodegenOperation> ops) {
+    /**
+     * Sort the operations by HTTP request methods.
+     *
+     * @param ops List<CodegenOperation>
+     * @return List<CodegenOperation>
+     */
+    private List<CodegenOperation> sortByHttpMethod(List<CodegenOperation> ops) {
         final String[] HTTP_METHODS_ORDER = {
                 "POST", "GET", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PUT", "PATCH", "DELETE"
         };
@@ -649,7 +705,13 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
         return opsSorted;
     }
 
-    public CodegenParameter setParamExample(CodegenParameter param) {
+    /**
+     * Add example to the parameters.
+     *
+     * @param param CodegenParameter
+     * @return CodegenParameter
+     */
+    private CodegenParameter setParamExample(CodegenParameter param) {
         JSONObject paramJsonObject = new JSONObject(param.getJsonSchema());
 
         if (paramJsonObject.has("example")) {
