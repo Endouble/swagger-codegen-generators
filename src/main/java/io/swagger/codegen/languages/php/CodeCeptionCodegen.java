@@ -440,7 +440,7 @@ public class CodeCeptionCodegen extends AbstractPhpCodegen {
     }
 
     /**
-     * Convert schemas to CodeCeption.
+     * Convert schemas recursively to CodeCeption.
      *
      * @param property$ref String
      * @param key String
