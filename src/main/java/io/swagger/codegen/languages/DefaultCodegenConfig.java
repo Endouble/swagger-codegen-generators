@@ -90,6 +90,7 @@ import static io.swagger.codegen.CodegenConstants.HAS_ONLY_READ_ONLY_EXT_NAME;
 import static io.swagger.codegen.CodegenConstants.HAS_OPTIONAL_EXT_NAME;
 import static io.swagger.codegen.CodegenConstants.HAS_REQUIRED_EXT_NAME;
 import static io.swagger.codegen.CodegenConstants.IS_ARRAY_MODEL_EXT_NAME;
+import static io.swagger.codegen.CodegenConstants.IS_CONTAINER_EXT_NAME;
 import static io.swagger.codegen.CodegenConstants.IS_ENUM_EXT_NAME;
 import static io.swagger.codegen.handlebars.helpers.ExtensionHelper.getBooleanValue;
 import static io.swagger.codegen.languages.CodegenHelper.getDefaultIncludes;
@@ -1305,11 +1306,16 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
 
         if (schema instanceof ArraySchema) {
             codegenModel.getVendorExtensions().put(IS_ARRAY_MODEL_EXT_NAME, Boolean.TRUE);
+            codegenModel.getVendorExtensions().put(IS_CONTAINER_EXT_NAME, Boolean.TRUE);
             codegenModel.arrayModelType = fromProperty(name, schema).complexType;
             addParentContainer(codegenModel, name, schema);
-            //} else if (schema instanceof RefModel) {
-            // TODO
-        } else if (schema instanceof ComposedSchema) {
+        }
+        else if (schema instanceof MapSchema) {
+            codegenModel.getVendorExtensions().put(CodegenConstants.IS_MAP_CONTAINER_EXT_NAME, Boolean.TRUE);
+            codegenModel.getVendorExtensions().put(IS_CONTAINER_EXT_NAME, Boolean.TRUE);
+            addParentContainer(codegenModel, name, schema);
+        }
+        else if (schema instanceof ComposedSchema) {
             final ComposedSchema composed = (ComposedSchema) schema;
             Map<String, Schema> properties = new LinkedHashMap<>();
             List<String> required = new ArrayList<String>();
@@ -2033,9 +2039,6 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
                 String bodyName = getSimpleRef(body.get$ref());
                 body = openAPI.getComponents().getRequestBodies().get(bodyName);
             }
-            bodyParam = fromRequestBody(body, schemas, imports);
-            bodyParams.add(bodyParam);
-            allParams.add(bodyParam);
             if (containsFormContentType(body)) {
                 Schema schema = getSchemaFromBody(body);
                 final Map<String, Schema> propertyMap = schema.getProperties();
@@ -2045,8 +2048,13 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
                                 .name(propertyName)
                                 .schema(propertyMap.get(propertyName)), imports);
                         formParams.add(codegenParameter);
+                        allParams.add(codegenParameter);
                     }
                 }
+            } else {
+                bodyParam = fromRequestBody(body, schemas, imports);
+                bodyParams.add(bodyParam);
+                allParams.add(bodyParam);
             }
         }
 
@@ -2325,19 +2333,16 @@ public abstract class DefaultCodegenConfig implements CodegenConfig {
 
             codegenParameter.dataType = codegenProperty.datatype;
             codegenParameter.dataFormat = codegenProperty.dataFormat;
-            boolean isEnum = getBooleanValue(codegenProperty, IS_ENUM_EXT_NAME);
-            if(isEnum) {
+
+            if (getBooleanValue(codegenProperty, IS_ENUM_EXT_NAME)) {
                 codegenParameter.datatypeWithEnum = codegenProperty.datatypeWithEnum;
                 codegenParameter.enumName = codegenProperty.enumName;
+
+                updateCodegenPropertyEnum(codegenProperty);
+                codegenParameter.getVendorExtensions().put(CodegenConstants.IS_ENUM_EXT_NAME, Boolean.TRUE);
+                codegenParameter._enum = codegenProperty._enum;
             }
-
-            // enum
-            updateCodegenPropertyEnum(codegenProperty);
-            codegenParameter.getVendorExtensions().put(CodegenConstants.IS_ENUM_EXT_NAME, Boolean.TRUE);
-            codegenParameter.getVendorExtensions().put(CodegenConstants.IS_LIST_CONTAINER_EXT_NAME, Boolean.TRUE);
-            codegenParameter._enum = codegenProperty._enum;
             codegenParameter.allowableValues = codegenProperty.allowableValues;
-
 
             if (codegenProperty.items != null && getBooleanValue(codegenProperty.items, IS_ENUM_EXT_NAME)) {
                 codegenParameter.datatypeWithEnum = codegenProperty.datatypeWithEnum;
