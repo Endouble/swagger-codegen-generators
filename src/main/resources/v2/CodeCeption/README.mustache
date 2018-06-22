@@ -42,6 +42,9 @@ To run the acceptance tests in debug mode:
 `./vendor/bin/codecept run --steps --debug`
 ```
 
+To create acceptance tests from swagger, run the following command:
+java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate -i ~/openapi.json -l php-codeception -o ~/CodeCeptionProjectName
+
 ## Documentation for API Endpoints
 
 All URIs are relative to *{{basePath}}*
